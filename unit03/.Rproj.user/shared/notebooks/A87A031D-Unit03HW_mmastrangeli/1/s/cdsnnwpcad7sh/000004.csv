@@ -1,0 +1,7 @@
+"0","UrlAddress <- ""https://github.com/caesar0301/awesome-public-datasets"""
+"0","git2r::clone(url = UrlAddress, local_path = getwd())"
+"1","cloning into '/Users/mmastran/SMU/MSDS/R Projects/Unit03HW'...
+"
+"2","Error in git2r::clone(url = UrlAddress, local_path = getwd()) : 
+  Error in 'git2r_clone': '/Users/mmastran/SMU/MSDS/R Projects/Unit03HW' exists and is not an empty directory
+"

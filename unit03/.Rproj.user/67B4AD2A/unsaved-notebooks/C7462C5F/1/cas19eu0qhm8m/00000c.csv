@@ -1,0 +1,32 @@
+"0","UrlAddress <- ""https://github.com/caesar0301/awesome-public-datasets"""
+"0","git2r::clone(url = UrlAddress, local_path = ""/Users/mmastran/SMU/MSDS/github/MSDS/unit03/awesome-public-datasets"")"
+"1","cloning into '/Users/mmastran/SMU/MSDS/github/MSDS/unit03/awesome-public-datasets'...
+"
+"1","Receiving objects:   1% (15/1484),    8 kb
+"
+"1","Receiving objects:  11% (164/1484),   40 kb
+"
+"1","Receiving objects:  21% (312/1484),   73 kb
+"
+"1","Receiving objects:  31% (461/1484),   97 kb
+"
+"1","Receiving objects:  41% (609/1484),  201 kb
+"
+"1","Receiving objects:  51% (757/1484),  345 kb
+"
+"1","Receiving objects:  61% (906/1484),  401 kb
+"
+"1","Receiving objects:  71% (1054/1484),  417 kb
+"
+"1","Receiving objects:  81% (1203/1484),  449 kb
+"
+"1","Receiving objects:  91% (1351/1484),  505 kb
+"
+"1","Receiving objects: 100% (1484/1484),  566 kb, done.
+"
+"1","Local:    master /Users/mmastran/SMU/MSDS/github/MSDS/unit03/awesome-public-datasets
+"
+"1","Remote:   master @ origin (https://github.com/caesar0301/awesome-public-datasets)
+"
+"1","Head:     [bb6ec99] 2018-07-16: Update README from APD2: 6407620d576f5be3f9d8fb25672f953899b6db9b
+"

@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"git2r::clone(url = UrlAddress, local_path = getwd())","line_number":0}],"message":"Error in git2r::clone(url = UrlAddress, local_path = getwd()) : \n  Error in 'git2r_clone': '/Users/mmastran/SMU/MSDS/R Projects/Unit03HW' exists and is not an empty directory\n"}

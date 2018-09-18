@@ -2,17 +2,22 @@
 title: "Unit3HW"
 author: "Mark Mastrangeli"
 date: "9/17/2018"
-output: html_document
+output: 
+  html_document:
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+setwd("/Users/mmastran/SMU/MSDS/github/MSDS/unit03")
 ```
 ## This is Live Session Unit 03 Assignment
 
 ## 1. Github Cloning (20 Points)
 ##Using Git, clone the following GitHub repository to your local machine: https://github.com/caesar0301/awesome-public-datasets.  In RMarkdown, please show the code (commented out, as it’s not R syntax) that you used to create a new directory, navigate to the appropriate directory, and clone the repository to it.  One Git command per line, please.
 ```{r, echo=TRUE}
+UrlAddress <- "https://github.com/caesar0301/awesome-public-datasets"
+git2r::clone(url = UrlAddress, local_path = getwd())
 
 
 ```
