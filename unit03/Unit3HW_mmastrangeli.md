@@ -7,16 +7,14 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-setwd("/Users/mmastran/SMU/MSDS/github/MSDS/unit03")
-```
+
 Live Session Unit 03 Assignment
 
 ##1.	 GitHub Cloning (20 points): Using Git, clone the following GitHub repository to your local machine: https://github.com/caesar0301/awesome-public-datasets.  In RMarkdown, please show the code (commented out, as it’s not R syntax) that you used to create a new directory, navigate to the appropriate directory, and clone the repository to it.  One Git command per line, please.
 
 #Commenting out the following code because it has already run. 
-```{r, echo=TRUE}
+
+```r
 #Making sure that my working directory is set correctly to my github syncronized directory
 #setwd("/Users/mmastran/SMU/MSDS/github/MSDS/unit03")
 #Creating variable to store URL of awesome-public-datasets
@@ -31,14 +29,16 @@ Live Session Unit 03 Assignment
 *b.	Output the respective count of females and males aboard the Titanic. Plot the frequency of females and males.  Be sure to give an accurate title and label the axes.
 *c.	Please use one apply function (to review: swirl() modules 11, 12) to output the means of Age, Fare, and Survival.  Make sure the output is a real number for all three means.
 
-```{r, echo=TRUE}
+
+```r
 #Creating variable to store path of the cloned awesome-public-datasets repo. I am sure there is a fancier way to code navigation from the cloned directory root to the sub directory that contains the titanic.csv.zip file. Would be great to improve this in that way. 
 awesome_public_data_archive <- "/Users/mmastran/SMU/MSDS/github/MSDS/unit03/awesome-public-datasets/Datasets/titanic.csv.zip"
 #extract titanic.csv from archive
 unzip(awesome_public_data_archive)
 ```
 ##2a. In R, please read in titanic.csv via either read.table() or read.csv(), assigning it to df.  This dataset follows the passengers aboard the Titanic, including their fees paid, rooms rented, and survivorship status.
-```{r, echo=TRUE}
+
+```r
 ##Read in titanic.csv using readcsv() and store in a data frame name 'titanic_data' then pass to the str() function for analysis of structure
 
 #Store titanic.csv path in variable
@@ -49,11 +49,26 @@ titanic_data <- read.csv(titanic_csv_path)
 
 #Confirm class of titanic_data and analyze Structure using str() function to identify column names 'variables', variance and number of observations.
 str(titanic_data)
+```
 
 ```
+## 'data.frame':	891 obs. of  12 variables:
+##  $ PassengerId: int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ Survived   : int  0 1 1 1 0 0 0 0 1 1 ...
+##  $ Pclass     : int  3 1 3 1 3 3 1 3 3 2 ...
+##  $ Name       : Factor w/ 891 levels "Abbing, Mr. Anthony",..: 109 191 358 277 16 559 520 629 417 581 ...
+##  $ Sex        : Factor w/ 2 levels "female","male": 2 1 1 1 2 2 2 2 1 1 ...
+##  $ Age        : num  22 38 26 35 35 NA 54 2 27 14 ...
+##  $ SibSp      : int  1 1 0 1 0 0 0 3 0 1 ...
+##  $ Parch      : int  0 0 0 0 0 0 0 1 2 0 ...
+##  $ Ticket     : Factor w/ 681 levels "110152","110413",..: 524 597 670 50 473 276 86 396 345 133 ...
+##  $ Fare       : num  7.25 71.28 7.92 53.1 8.05 ...
+##  $ Cabin      : Factor w/ 148 levels "","A10","A14",..: 1 83 1 57 1 1 131 1 1 1 ...
+##  $ Embarked   : Factor w/ 4 levels "","C","Q","S": 4 2 4 4 4 3 4 4 4 2 ...
+```
 ##3b.	Output the respective count of females and males aboard the Titanic. Plot the frequency of females and males.  Be sure to give an accurate title and label the axes.
-```{r, echo=TRUE}
 
+```r
 #Load the plyr library for analysis and counting
 library(plyr)
 
@@ -62,28 +77,151 @@ titanic_data_sex <- titanic_data$Sex
 
 #display the titanic passenger sex dataframe
 titanic_data_sex
+```
 
+```
+##   [1] male   female female female male   male   male   male   female female
+##  [11] female female male   male   female female male   male   female female
+##  [21] male   male   female male   female female male   male   female male  
+##  [31] male   female female male   male   male   male   male   female female
+##  [41] female female male   female female male   male   female male   female
+##  [51] male   male   female female male   male   female male   female male  
+##  [61] male   female male   male   male   male   female male   female male  
+##  [71] male   female male   male   male   male   male   male   male   female
+##  [81] male   male   female male   female female male   male   female male  
+##  [91] male   male   male   male   male   male   male   male   female male  
+## [101] female male   male   male   male   male   female male   male   female
+## [111] male   female male   female female male   male   male   male   female
+## [121] male   male   male   female male   male   male   male   female male  
+## [131] male   male   female female male   male   female male   male   male  
+## [141] female female female male   male   male   male   female male   male  
+## [151] male   female male   male   male   male   female male   male   male  
+## [161] male   female male   male   male   male   female female male   male  
+## [171] male   male   female male   male   male   male   female male   male  
+## [181] female male   male   male   female male   female male   male   male  
+## [191] female male   female male   female female male   male   female female
+## [201] male   male   male   male   male   female male   male   female male  
+## [211] male   female male   male   male   female female male   female male  
+## [221] male   male   male   male   male   male   male   male   male   female
+## [231] female male   male   female male   female male   female male   male  
+## [241] female female male   male   male   male   female female male   male  
+## [251] male   female male   male   female female female female female female
+## [261] male   male   male   male   female male   male   male   female female
+## [271] male   male   female male   female female female male   male   female
+## [281] male   male   male   male   male   male   male   male   male   female
+## [291] female female male   female male   male   male   female male   female
+## [301] female male   male   female male   male   female female male   female
+## [311] female female female male   male   female female male   female female
+## [321] male   male   female female male   female male   female female female
+## [331] female male   male   male   female male   male   female male   male  
+## [341] male   female male   male   male   female female female male   male  
+## [351] male   male   male   male   male   male   female female female female
+## [361] male   male   female male   male   male   female female female female
+## [371] male   male   male   male   female female female male   male   male  
+## [381] female female male   female male   male   male   female male   female
+## [391] male   male   male   female female male   female male   male   female
+## [401] male   male   female male   female male   male   male   male   female
+## [411] male   male   female male   male   female female female male   female
+## [421] male   male   male   female male   male   female female male   male  
+## [431] male   female female male   male   female female female male   male  
+## [441] female male   male   female male   male   female male   female male  
+## [451] male   male   male   male   male   male   male   female female male  
+## [461] male   male   male   male   male   male   male   male   male   female
+## [471] male   male   female female female male   male   male   male   female
+## [481] male   male   male   female male   female female male   male   male  
+## [491] male   male   male   male   male   male   female male   female male  
+## [501] male   female female female female male   female male   male   male  
+## [511] male   male   male   female male   male   female male   female male  
+## [521] female male   male   female male   male   female male   male   male  
+## [531] female male   male   female female female male   female male   female
+## [541] female female female male   male   male   female male   male   male  
+## [551] male   male   male   male   female male   female male   female female
+## [561] male   male   male   male   female male   male   female male   male  
+## [571] male   female male   female male   male   female female female male  
+## [581] female female male   male   male   female male   male   male   male  
+## [591] male   female male   female male   male   female male   male   male  
+## [601] female male   male   male   male   male   male   male   female female
+## [611] female male   female male   male   female male   female female male  
+## [621] male   male   male   male   male   male   male   female male   male  
+## [631] male   male   male   male   female female male   male   female male  
+## [641] male   female female male   female male   male   male   male   female
+## [651] male   female male   female female male   male   female male   male  
+## [661] male   male   male   male   male   male   male   male   male   female
+## [671] female male   male   male   male   male   male   female female male  
+## [681] female male   male   male   male   male   male   male   male   female
+## [691] male   female male   male   male   male   male   female male   male  
+## [701] female male   female male   male   male   female male   female male  
+## [711] female male   male   male   male   male   female female male   male  
+## [721] female male   male   male   male   male   female female male   female
+## [731] female male   male   male   male   male   female male   male   male  
+## [741] male   male   female male   male   male   male   female male   male  
+## [751] female male   male   male   female male   male   male   male   female
+## [761] male   male   male   female male   female male   female male   male  
+## [771] male   male   female male   female male   male   female male   female
+## [781] female female male   male   male   male   female male   male   male  
+## [791] male   male   female male   male   male   female female male   female
+## [801] male   female male   male   male   male   male   female male   female
+## [811] male   male   male   female male   male   female male   male   male  
+## [821] female male   male   female male   male   male   male   male   female
+## [831] female male   male   male   male   female male   male   male   male  
+## [841] male   male   female male   male   male   male   male   male   female
+## [851] male   male   female female female female female male   female male  
+## [861] male   male   female female male   female female male   male   male  
+## [871] male   female male   male   female female male   male   male   female
+## [881] female male   female male   male   female male   female female male  
+## [891] male  
+## Levels: female male
+```
+
+```r
 #Subset the vector into two vectors, male and female
 #titanic_data_sex_male <- subset(titanic_data_sex, subset("male") == TRUE, select, drop = FALSE)
 #titanic_data_sex_male
 
 #Try using count function
 count(titanic_data_sex)
+```
+
+```
+##        x freq
+## 1 female  314
+## 2   male  577
+```
+
+```r
 #count returns unique factors and frequency but does not plot well
 
 plot(titanic_data_sex, main = "Titanic Male & Female Frequency", xlab = "Sex", ylab = "Frequency")
-
 ```
+
+![](Unit3HW_mmastrangeli_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 ## 3c.	Please use one apply function (to review: swirl() modules 11, 12) to output the means of Age, Fare, and Survival.  Make sure the output is a real number for all three means.
-```{r, echo=TRUE}
+
+```r
 #Using sapply() return the mean of the 'Age', 'Fare', 'Survived' variables. In order to nest a function in the sapply function, using list to return
 #Had to add the na.rm argument in order to ignore NA entries in the data. 
 
 lapply(list(titanic_data$Age, titanic_data$Fare, titanic_data$Survived), mean, na.rm=TRUE)
+```
 
+```
+## [[1]]
+## [1] 29.69912
+## 
+## [[2]]
+## [1] 32.20421
+## 
+## [[3]]
+## [1] 0.3838384
+```
+
+```r
 #Trying the sapply function
 sapply(list(titanic_data$Age, titanic_data$Fare, titanic_data$Survived), mean, simplify = TRUE, USE.NAMES = TRUE, na.rm=TRUE)
+```
 
+```
+## [1] 29.6991176 32.2042080  0.3838384
 ```
 
 
@@ -94,7 +232,8 @@ sapply(list(titanic_data$Age, titanic_data$Fare, titanic_data$Survived), mean, s
 *d.	Round the report to at most 2 digits: leave this as the closing line to the function.
 *e.	Finally, run the function on your sleep data to show the output.
 
-```{r, echo=TRUE}
+
+```r
 #Download the file sleep_data_01.csv from http://talklab.psy.gla.ac.uk/L1_labs/lab_1/homework/index.html and store in a dataframe 'sleep_data
 
 # Download and store data from sleep_data_01.csv and store in a dataframe 'sleep_data' 
@@ -102,9 +241,28 @@ sleep_data <- read.csv("http://talklab.psy.gla.ac.uk/L1_labs/lab_1/homework/slee
 str(sleep_data)
 ```
 
-##4a.	Create objects for the median Age, the minimum and maximum Duration of sleep, and the mean and standard deviation of the Rosenberg Self Esteem scale (RSES).  You may need to specify a few options like in Problem 2 and live session.
-```{r, echo=TRUE}
+```
+## 'data.frame':	101 obs. of  15 variables:
+##  $ SubjID  : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ Age     : int  16 16 16 16 16 16 16 13 12 16 ...
+##  $ Gender  : int  2 1 1 1 1 1 1 1 1 2 ...
+##  $ PSQI    : int  5 4 7 6 8 15 7 4 5 4 ...
+##  $ PSAScog : int  8 31 9 17 33 NA 27 13 14 11 ...
+##  $ FOMO    : int  18 41 16 22 36 NA 15 17 25 16 ...
+##  $ SMUISa  : int  19 25 17 14 NA NA 20 9 15 7 ...
+##  $ SM1     : int  11 18 16 17 NA NA 21 17 17 13 ...
+##  $ SM2     : int  12 21 14 13 NA NA 24 2 7 11 ...
+##  $ HADSa   : int  10 20 7 9 NA NA 13 9 10 4 ...
+##  $ HADSd   : int  8 8 3 5 NA NA 6 7 5 2 ...
+##  $ RSES    : int  17 5 17 12 NA NA 22 22 21 21 ...
+##  $ Bedtime : num  10 10 10.5 10.5 11 ...
+##  $ Latency : int  20 30 20 30 30 20 15 5 30 20 ...
+##  $ Duration: num  10 9 7.5 7 6 4 6 11 8.5 8 ...
+```
 
+##4a.	Create objects for the median Age, the minimum and maximum Duration of sleep, and the mean and standard deviation of the Rosenberg Self Esteem scale (RSES).  You may need to specify a few options like in Problem 2 and live session.
+
+```r
 sleep_data_age <- sleep_data$Age
 sleed_data_duration <- sleep_data$Duration
 sleep_data_RSES <- sleep_data$RSES
@@ -120,37 +278,65 @@ sleep_data_RSES_mean <- mean(sleep_data_RSES, na.rm=TRUE)
 sleep_data_RSES_sd <- sd(sleep_data_RSES, na.rm=TRUE)
 
 sleep_data_age_median
-sleed_data_duration_min
-sleed_data_duration_max
-sleep_data_RSES_mean
-sleep_data_RSES_sd
+```
 
+```
+## [1] 14
+```
+
+```r
+sleed_data_duration_min
+```
+
+```
+## [1] 4
+```
+
+```r
+sleed_data_duration_max
+```
+
+```
+## [1] 11
+```
+
+```r
+sleep_data_RSES_mean
+```
+
+```
+## [1] 18.11494
+```
+
+```r
+sleep_data_RSES_sd
+```
+
+```
+## [1] 6.176522
 ```
 ## 4b.	Create a data.frame object called report: 
 #it should consist of the median age, the RSES mean and standard deviation respectively divided by five (since there are five questions and these scores are summed), 
 #and the range of Duration (the statistical definition of range; it should be a single number.)
-```{r, echo=TRUE}
+
+```r
 #DivBy2 <- function(x){x/2}
 report <- round(c(c(sleep_data_age_median, sleep_data_RSES_mean, sleep_data_RSES_sd)/5, range(sleep_data$Duration, na.rm = TRUE)))
 
 report
 ```
 
-##4c.	Change the column names of this data.frame to MedianAge, SelfEsteem, SE_SD, and DurationRange.
-```{r, echo=TRUE}
-
-
 ```
+## [1]  3  4  1  4 11
+```
+
+##4c.	Change the column names of this data.frame to MedianAge, SelfEsteem, SE_SD, and DurationRange.
+
 
 ##4d.	Round the report to at most 2 digits: leave this as the closing line to the function.
-```{r, echo=TRUE}
 
-
-```
 ##4e.	Finally, run the function on your sleep data to show the output.
-```{r, echo=TRUE}
 
-```
 
 
 
@@ -161,7 +347,8 @@ report
 *d.	Using R command(s), give the dimensions and column names of this data frame.
 ##
 ## 5a.	Install the fivethirtyeight package.
-```{r, echo=TRUE}
+
+```r
 #Making sure that my working directory is set correctly to my github syncronized directory
 #setwd("/Users/mmastran/SMU/MSDS/github/MSDS/unit03")
 #Creating variable to store URL of FiveThirtyEight
