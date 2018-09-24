@@ -169,8 +169,8 @@ report
 #list(UrlAddress)
 #Git Command to clone FiveThirtyEight to my MSDS/unit03/FiveThirtyEight Github repository
 #git2r::clone(url = UrlAddress, local_path = "/Users/mmastran/SMU/MSDS/github/MSDS/unit03/FiveThirtyEight")
-#install.packages("fivethirtyeight")
-#library(fivethirtyeight)
+install.packages("fivethirtyeight")
+library(fivethirtyeight)
 ```
 
 #*b.	In the listing of Data sets in package ‘fivethirtyeight,’ assign the 22nd data set to an object ‘df.’

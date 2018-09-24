@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1537737683744.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5D61EB4C",
+    "lastKnownWriteTime" : 2314885530279477254,
+    "last_content_update" : 1537737683744,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "F98F77E7",
+        "caption" : "HarryPotterCharacters",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=HarryPotterCharacters&cache_key=F98F77E7",
+        "displayedObservations" : 154,
+        "environment" : "",
+        "object" : "HarryPotterCharacters",
+        "preview" : 0,
+        "totalObservations" : 154,
+        "variables" : 1
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

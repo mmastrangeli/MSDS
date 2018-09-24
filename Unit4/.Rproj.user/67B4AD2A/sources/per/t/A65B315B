@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1537737680118.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A65B315B",
+    "lastKnownWriteTime" : 1537734686,
+    "last_content_update" : 1537737680118,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "F1E6EEFE",
+        "caption" : "HarryPotterCastData",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=HarryPotterCastData&cache_key=F1E6EEFE",
+        "displayedObservations" : 154,
+        "environment" : "",
+        "object" : "HarryPotterCastData",
+        "preview" : 0,
+        "totalObservations" : 154,
+        "variables" : 1
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
