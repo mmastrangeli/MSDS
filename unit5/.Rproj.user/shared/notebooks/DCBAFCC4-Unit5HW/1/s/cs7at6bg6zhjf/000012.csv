@@ -1,1 +1,2 @@
-"0","write.csv(head(FemaleNameData, 100), file=""TopFemaleNameData.csv"", row.names = FALSE)"
+"0","colnames(FemaleNameData) <- c(""Name"", ""Gender"", ""Total"")"
+"0","head(FemaleNameData, 10)"
