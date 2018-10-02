@@ -1,0 +1,6 @@
+"0","MergedNameData <- merge(names2015_2, names2016_2, by=c(""Name"", ""Gender""), all = FALSE)"
+"0","MergedNameData$Frequency <- MergedNameData$Frequency.x"
+"0","MergedNameData$Frequency = (MergedNameData$Frequency + MergedNameData$Frequency.y)"
+"0","MergedNameData_2 <- MergedNameData[c(1,2,5)]"
+"0","MergedNameData_2 <- MergedNameData_2[order(-MergedNameData_2$Frequency), ]"
+"0","head(MergedNameData, 10)"

@@ -1,0 +1,17 @@
+#a.	First, import the .txt file into R so you can process it.  Keep in mind this is not a CSV file.  You might have to open the file to see what you’re dealing with.  Assign the resulting data frame to an object, df, that consists of three columns with human-readable column names for each.
+#Store titanic.csv path in variable
+data_path1 <- "/Users/mmastran/SMU/MSDS/github/MSDS/unit5/LiveSessionAssignment5_2/yob2015.txt"
+data_path2 <- "/Users/mmastran/SMU/MSDS/github/MSDS/unit5/LiveSessionAssignment5_2/yob2016.txt"
+
+#read in data from titanic.csv
+titanic_data <- read.csv(titanic_csv_path)
+
+#Confirm class of titanic_data and analyze Structure using str() function to identify column names 'variables', variance and number of observations.
+str(data_path1)
+str(data_path2)
+
+namesdf <- c(read.table(data_path1, header = FALSE, sep = ";", strip.white = TRUE), read.table(data_path2, header = FALSE, sep = ";", strip.white = TRUE))
+
+#colnames(namesdf)[colnames(namesdf)=='V1'] <- 'Name'
+#colnames(namesdf)[colnames(namesdf)=='V2'] <- 'Gender'
+#colnames(namesdf)[colnames(namesdf)=='V3'] <- 'Count_of_Name'

@@ -13,15 +13,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, echo=TRUE}
 #Loading required libraries
 library(XML)
+library(XML)
 library(dplyr)
-library(bitops)
-library(stringi)
-library(repmis)
-library(rvest)
 library(tidyr)
-library(stringr)
+library(stringi)
+library(rvest)
 library(ggplot2)
-library(tibble)
+library(RCurl)
 ```
 
 
@@ -39,8 +37,6 @@ Unit 4 Homework
 *	d. Split the Actor’s name into two columns: FirstName and Surname. Keep in mind that some actors/actresses have middle names as well. Please make sure that the middle names are in the FirstName column, in addition to the first name (example: given the Actor Frank Jeffrey Stevenson, the FirstName column would say “Frank Jeffrey.”) 
 	
 *	e. Present the first 10 rows of the data.frame() – It should have only FirstName, Surname, and Character columns. 
-
-
 
 #Question 1a
 *In the IMDB, there are listings of full cast members for movies. Navigate to http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1. Feel free to View Source to get a good idea of what the page looks like in code.
@@ -93,6 +89,7 @@ HarryPotterCastData
 #Add Column to the table
 HarryPotterCastData$FirstName <- as.character("NA")
 HarryPotterCastData$LastName <- as.character("NA")
+separate(Actor, into=c("FirstNames", "Surname"), sep="[ ](?=[^ ]+$)")
 
 #HarryPotterCastData$LastName <- str_extract(HarryPotterCastData$Actors, "([^ ]+)")
 #Clean up data table
@@ -113,7 +110,7 @@ HarryPotterCastData
 #Question 1e
 *	e. Present the first 10 rows of the data.frame() – It should have only FirstName, Surname, and Character columns. 
 ```{r, echo=TRUE}
-
+head(HarryPotterCastData, n=10)
 
 
 ```
@@ -135,10 +132,13 @@ HarryPotterCastData
 ## Question 2
 ```{r echo=TRUE}
 
-SpursStatsURL <- "http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs"
-SpursShootingURLData <- read_html("http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs")
+spurs<-read_html("http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs")
+spurs_table<-html_nodes(spurs, "table")
+spurs_dfs<-html_table(spurs_table, fill = TRUE)
+spursdf1<-data.frame(spurs_dfs[1])
+spursdf1
+```
 
-SpursShootingStats <- html_text(html_nodes(SpursShootingURLData, "td"))
 
 #create a data frame of spurs stats
 SpursShootingStats <-  as.data.frame(SpursShootingStats)
@@ -152,10 +152,9 @@ SpursShootingStats <- as.data.frame(SpursShootingStats)
 #Split single column into mulltiple columns
 SpursShootingStats <- as.data.frame(matrix(SpursShootingStats[,1], byrow=TRUE, ncol = 15))
 
-```
 
 #Rename columns
 ```{r echo=TRUE}
-names(SpursShootingStats) <- c("Player", "FGM", "FGA", "FG%", "3PM", "3PA", "3P%", "FTM", "FTA", "FT%", "2PM","2PA", "2P%", "PPS", "AFG%")
+names(spursdf1) <- c("Player", "FGM", "FGA", "FG%", "3PM", "3PA", "3P%", "FTM", "FTA", "FT%", "2PM","2PA", "2P%", "PPS", "AFG%")
 
 ```
