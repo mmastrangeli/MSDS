@@ -77,9 +77,6 @@ rm(data_path2)
 ```{r, echo=TRUE}
 #a. 
 
-tail(names2015_2, 10)
-tail(names2016_2, 10)
-
 MergedNameData <- merge(names2015_2, names2016_2, by=c("Name", "Gender"), all = FALSE)
 
 MergedNameData$Frequency <- MergedNameData$Frequency.x
@@ -94,7 +91,8 @@ head(MergedNameData_2, 10)
 #Pull Out Female and Male Names into seperate dataframes
 MaleNameData <- MergedNameData_2[MergedNameData_2$Gender == 'M',]
 FemaleNameData <- MergedNameData_2[MergedNameData_2$Gender == 'F',]
-
+row.names(FemaleNameData) <- 1:nrow(FemaleNameData)
+row.names(MaleNameData) <- 1:nrow(MaleNameData)
 head(MaleNameData, 10)
 head(FemaleNameData, 10)
 
@@ -116,7 +114,7 @@ rm(names2015_2)
 *d.	Write these top 10 girl names and their Totals to a CSV file.  Leave out the other columns entirely.
 ```{r, echo=TRUE}
 colnames(FemaleNameData) <- c("Name", "Gender", "Total")
-
+row.names(FemaleNameData) <- 1:nrow(FemaleNameData)
 head(FemaleNameData, 10)
 write.csv(head(FemaleNameData, 100), file="TopFemaleNameData.csv", row.names = FALSE)
 
@@ -128,7 +126,7 @@ write.csv(head(FemaleNameData, 100), file="TopFemaleNameData.csv", row.names = F
 
 
 ```
-
+Github Directory https://github.com/mmastrangeli/MSDS/tree/master/unit5 
 
 
 

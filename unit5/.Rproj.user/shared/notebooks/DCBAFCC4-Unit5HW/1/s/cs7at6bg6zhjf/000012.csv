@@ -1,2 +1,0 @@
-"0","colnames(FemaleNameData) <- c(""Name"", ""Gender"", ""Total"")"
-"0","head(FemaleNameData, 10)"

@@ -196,31 +196,7 @@ rm(data_path2)
 </em>b. Display the last ten rows in the dataframe. Describe something you find interesting about these 10 rows. *c. Merge y2016 and y2015 by your Name column; assign it to final. The client only cares about names that have data for both 2016 and 2015; there should be no NA values in either of your amount of children rows after merging.</p>
 <pre class="r"><code>#a. 
 
-tail(names2015_2, 10)</code></pre>
-<pre><code>##         Name Gender Frequency
-## 33054   Ziyu      M         5
-## 33055   Zoel      M         5
-## 33056  Zohar      M         5
-## 33057 Zolton      M         5
-## 33058   Zyah      M         5
-## 33059 Zykell      M         5
-## 33060 Zyking      M         5
-## 33061  Zykir      M         5
-## 33062  Zyrus      M         5
-## 33063   Zyus      M         5</code></pre>
-<pre class="r"><code>tail(names2016_2, 10)</code></pre>
-<pre><code>##         Name Gender Frequency
-## 32860   Zinn      M         5
-## 32861  Zirui      M         5
-## 32862   Ziya      M         5
-## 32863 Ziyang      M         5
-## 32864   Zoel      M         5
-## 32865 Zolton      M         5
-## 32866 Zurich      M         5
-## 32867 Zyahir      M         5
-## 32868   Zyel      M         5
-## 32869  Zylyn      M         5</code></pre>
-<pre class="r"><code>MergedNameData &lt;- merge(names2015_2, names2016_2, by=c(&quot;Name&quot;, &quot;Gender&quot;), all = FALSE)
+MergedNameData &lt;- merge(names2015_2, names2016_2, by=c(&quot;Name&quot;, &quot;Gender&quot;), all = FALSE)
 
 MergedNameData$Frequency &lt;- MergedNameData$Frequency.x
 MergedNameData$Frequency = (MergedNameData$Frequency + MergedNameData$Frequency.y)
@@ -255,45 +231,46 @@ head(MergedNameData, 10)</code></pre>
 <pre class="r"><code>#Pull Out Female and Male Names into seperate dataframes
 MaleNameData &lt;- MergedNameData_2[MergedNameData_2$Gender == 'M',]
 FemaleNameData &lt;- MergedNameData_2[MergedNameData_2$Gender == 'F',]
-
+row.names(FemaleNameData) &lt;- 1:nrow(FemaleNameData)
+row.names(MaleNameData) &lt;- 1:nrow(MaleNameData)
 head(MaleNameData, 10)</code></pre>
-<pre><code>##            Name Gender Frequency
-## 19594      Noah      M     38609
-## 16114      Liam      M     36468
-## 17715     Mason      M     31783
-## 25241   William      M     31531
-## 10993     Jacob      M     30330
-## 11436     James      M     29549
-## 8613      Ethan      M     28807
-## 18280   Michael      M     28394
-## 3924   Benjamin      M     28239
-## 1264  Alexander      M     27828</code></pre>
+<pre><code>##         Name Gender Frequency
+## 1       Noah      M     38609
+## 2       Liam      M     36468
+## 3      Mason      M     31783
+## 4    William      M     31531
+## 5      Jacob      M     30330
+## 6      James      M     29549
+## 7      Ethan      M     28807
+## 8    Michael      M     28394
+## 9   Benjamin      M     28239
+## 10 Alexander      M     27828</code></pre>
 <pre class="r"><code>head(FemaleNameData, 10)</code></pre>
-<pre><code>##            Name Gender Frequency
-## 8290       Emma      F     39829
-## 19886    Olivia      F     38884
-## 23273    Sophia      F     33451
-## 3252        Ava      F     32577
-## 10682  Isabella      F     30296
-## 18247       Mia      F     29237
-## 5493  Charlotte      F     24411
-## 277     Abigail      F     24070
-## 8273      Emily      F     22692
-## 9980     Harper      F     21016</code></pre>
+<pre><code>##         Name Gender Frequency
+## 1       Emma      F     39829
+## 2     Olivia      F     38884
+## 3     Sophia      F     33451
+## 4        Ava      F     32577
+## 5   Isabella      F     30296
+## 6        Mia      F     29237
+## 7  Charlotte      F     24411
+## 8    Abigail      F     24070
+## 9      Emily      F     22692
+## 10    Harper      F     21016</code></pre>
 <pre class="r"><code>print(&quot;Top 10 Female Baby Names for 2015 and 2016&quot;)                              </code></pre>
 <pre><code>## [1] &quot;Top 10 Female Baby Names for 2015 and 2016&quot;</code></pre>
 <pre class="r"><code>head(FemaleNameData, 10)</code></pre>
-<pre><code>##            Name Gender Frequency
-## 8290       Emma      F     39829
-## 19886    Olivia      F     38884
-## 23273    Sophia      F     33451
-## 3252        Ava      F     32577
-## 10682  Isabella      F     30296
-## 18247       Mia      F     29237
-## 5493  Charlotte      F     24411
-## 277     Abigail      F     24070
-## 8273      Emily      F     22692
-## 9980     Harper      F     21016</code></pre>
+<pre><code>##         Name Gender Frequency
+## 1       Emma      F     39829
+## 2     Olivia      F     38884
+## 3     Sophia      F     33451
+## 4        Ava      F     32577
+## 5   Isabella      F     30296
+## 6        Mia      F     29237
+## 7  Charlotte      F     24411
+## 8    Abigail      F     24070
+## 9      Emily      F     22692
+## 10    Harper      F     21016</code></pre>
 <pre class="r"><code>rm(MergedNameData)
 rm(names2016_2)
 rm(names2015_2)</code></pre>
@@ -302,24 +279,25 @@ rm(names2015_2)</code></pre>
 <h1>3. Data Summary (30 points): Utilize your data frame object final for this part.</h1>
 <p><em>a. Create a new column called “Total” in final that adds the amount of children in 2015 and 2016 together. In those two years combined, how many people were given popular names? </em>b. Sort the data by Total. What are the top 10 most popular names? <em>c. The client is expecting a girl! Omit boys and give the top 10 most popular girl’s names. </em>d. Write these top 10 girl names and their Totals to a CSV file. Leave out the other columns entirely.</p>
 <pre class="r"><code>colnames(FemaleNameData) &lt;- c(&quot;Name&quot;, &quot;Gender&quot;, &quot;Total&quot;)
-
+row.names(FemaleNameData) &lt;- 1:nrow(FemaleNameData)
 head(FemaleNameData, 10)</code></pre>
-<pre><code>##            Name Gender Total
-## 8290       Emma      F 39829
-## 19886    Olivia      F 38884
-## 23273    Sophia      F 33451
-## 3252        Ava      F 32577
-## 10682  Isabella      F 30296
-## 18247       Mia      F 29237
-## 5493  Charlotte      F 24411
-## 277     Abigail      F 24070
-## 8273      Emily      F 22692
-## 9980     Harper      F 21016</code></pre>
+<pre><code>##         Name Gender Total
+## 1       Emma      F 39829
+## 2     Olivia      F 38884
+## 3     Sophia      F 33451
+## 4        Ava      F 32577
+## 5   Isabella      F 30296
+## 6        Mia      F 29237
+## 7  Charlotte      F 24411
+## 8    Abigail      F 24070
+## 9      Emily      F 22692
+## 10    Harper      F 21016</code></pre>
 <pre class="r"><code>write.csv(head(FemaleNameData, 100), file=&quot;TopFemaleNameData.csv&quot;, row.names = FALSE)</code></pre>
 </div>
 <div id="upload-to-github-10-points-push-at-minimum-your-rmarkdown-for-this-homework-assignment-and-a-codebook-to-one-of-your-github-repositories-you-might-place-this-in-a-homework-repo-like-last-week.-the-codebook-should-contain-a-short-definition-of-each-object-you-create-and-if-creating-multiple-files-which-file-it-is-contained-in.-you-are-welcome-and-encouraged-to-add-other-filesjust-make-sure-you-have-a-description-and-directions-that-are-helpful-for-the-grader." class="section level1">
 <h1>4. Upload to GitHub (10 points): Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week). The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in. You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.</h1>
 <pre class="r"><code>#My RStudio is linked to my github. </code></pre>
+<p>Github Directory <a href="https://github.com/mmastrangeli/MSDS/tree/master/unit5" class="uri">https://github.com/mmastrangeli/MSDS/tree/master/unit5</a></p>
 </div>
 
 

@@ -1,0 +1,6 @@
+"0","#Pull Out Female and Male Names into seperate dataframes"
+"0","MaleNameData <- MergedNameData_2[MergedNameData_2$Gender == 'M',]"
+"0","FemaleNameData <- MergedNameData_2[MergedNameData_2$Gender == 'F',]"
+"0","row.names(FemaleNameData) <- 1:nrow(FemaleNameData)"
+"0","row.names(MaleNameData) <- 1:nrow(MaleNameData)"
+"0","head(MaleNameData, 10)"

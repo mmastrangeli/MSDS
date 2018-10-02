@@ -116,6 +116,42 @@ rm(data_path2)
 ```r
 #a. 
 
+tail(names2015_2, 10)
+```
+
+```
+##         Name Gender Frequency
+## 33054   Ziyu      M         5
+## 33055   Zoel      M         5
+## 33056  Zohar      M         5
+## 33057 Zolton      M         5
+## 33058   Zyah      M         5
+## 33059 Zykell      M         5
+## 33060 Zyking      M         5
+## 33061  Zykir      M         5
+## 33062  Zyrus      M         5
+## 33063   Zyus      M         5
+```
+
+```r
+tail(names2016_2, 10)
+```
+
+```
+##         Name Gender Frequency
+## 32860   Zinn      M         5
+## 32861  Zirui      M         5
+## 32862   Ziya      M         5
+## 32863 Ziyang      M         5
+## 32864   Zoel      M         5
+## 32865 Zolton      M         5
+## 32866 Zurich      M         5
+## 32867 Zyahir      M         5
+## 32868   Zyel      M         5
+## 32869  Zylyn      M         5
+```
+
+```r
 MergedNameData <- merge(names2015_2, names2016_2, by=c("Name", "Gender"), all = FALSE)
 
 MergedNameData$Frequency <- MergedNameData$Frequency.x
@@ -163,23 +199,22 @@ head(MergedNameData_2, 10)
 #Pull Out Female and Male Names into seperate dataframes
 MaleNameData <- MergedNameData_2[MergedNameData_2$Gender == 'M',]
 FemaleNameData <- MergedNameData_2[MergedNameData_2$Gender == 'F',]
-row.names(FemaleNameData) <- 1:nrow(FemaleNameData)
-row.names(MaleNameData) <- 1:nrow(MaleNameData)
+
 head(MaleNameData, 10)
 ```
 
 ```
-##         Name Gender Frequency
-## 1       Noah      M     38609
-## 2       Liam      M     36468
-## 3      Mason      M     31783
-## 4    William      M     31531
-## 5      Jacob      M     30330
-## 6      James      M     29549
-## 7      Ethan      M     28807
-## 8    Michael      M     28394
-## 9   Benjamin      M     28239
-## 10 Alexander      M     27828
+##            Name Gender Frequency
+## 19594      Noah      M     38609
+## 16114      Liam      M     36468
+## 17715     Mason      M     31783
+## 25241   William      M     31531
+## 10993     Jacob      M     30330
+## 11436     James      M     29549
+## 8613      Ethan      M     28807
+## 18280   Michael      M     28394
+## 3924   Benjamin      M     28239
+## 1264  Alexander      M     27828
 ```
 
 ```r
@@ -187,17 +222,17 @@ head(FemaleNameData, 10)
 ```
 
 ```
-##         Name Gender Frequency
-## 1       Emma      F     39829
-## 2     Olivia      F     38884
-## 3     Sophia      F     33451
-## 4        Ava      F     32577
-## 5   Isabella      F     30296
-## 6        Mia      F     29237
-## 7  Charlotte      F     24411
-## 8    Abigail      F     24070
-## 9      Emily      F     22692
-## 10    Harper      F     21016
+##            Name Gender Frequency
+## 8290       Emma      F     39829
+## 19886    Olivia      F     38884
+## 23273    Sophia      F     33451
+## 3252        Ava      F     32577
+## 10682  Isabella      F     30296
+## 18247       Mia      F     29237
+## 5493  Charlotte      F     24411
+## 277     Abigail      F     24070
+## 8273      Emily      F     22692
+## 9980     Harper      F     21016
 ```
 
 ```r
@@ -213,17 +248,17 @@ head(FemaleNameData, 10)
 ```
 
 ```
-##         Name Gender Frequency
-## 1       Emma      F     39829
-## 2     Olivia      F     38884
-## 3     Sophia      F     33451
-## 4        Ava      F     32577
-## 5   Isabella      F     30296
-## 6        Mia      F     29237
-## 7  Charlotte      F     24411
-## 8    Abigail      F     24070
-## 9      Emily      F     22692
-## 10    Harper      F     21016
+##            Name Gender Frequency
+## 8290       Emma      F     39829
+## 19886    Olivia      F     38884
+## 23273    Sophia      F     33451
+## 3252        Ava      F     32577
+## 10682  Isabella      F     30296
+## 18247       Mia      F     29237
+## 5493  Charlotte      F     24411
+## 277     Abigail      F     24070
+## 8273      Emily      F     22692
+## 9980     Harper      F     21016
 ```
 
 ```r
@@ -242,22 +277,22 @@ rm(names2015_2)
 
 ```r
 colnames(FemaleNameData) <- c("Name", "Gender", "Total")
-row.names(FemaleNameData) <- 1:nrow(FemaleNameData)
+
 head(FemaleNameData, 10)
 ```
 
 ```
-##         Name Gender Total
-## 1       Emma      F 39829
-## 2     Olivia      F 38884
-## 3     Sophia      F 33451
-## 4        Ava      F 32577
-## 5   Isabella      F 30296
-## 6        Mia      F 29237
-## 7  Charlotte      F 24411
-## 8    Abigail      F 24070
-## 9      Emily      F 22692
-## 10    Harper      F 21016
+##            Name Gender Total
+## 8290       Emma      F 39829
+## 19886    Olivia      F 38884
+## 23273    Sophia      F 33451
+## 3252        Ava      F 32577
+## 10682  Isabella      F 30296
+## 18247       Mia      F 29237
+## 5493  Charlotte      F 24411
+## 277     Abigail      F 24070
+## 8273      Emily      F 22692
+## 9980     Harper      F 21016
 ```
 
 ```r
@@ -268,7 +303,7 @@ write.csv(head(FemaleNameData, 100), file="TopFemaleNameData.csv", row.names = F
 ```r
 #My RStudio is linked to my github. 
 ```
-Github Directory https://github.com/mmastrangeli/MSDS/tree/master/unit5 
+
 
 
 
