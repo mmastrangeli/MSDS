@@ -1,0 +1,5 @@
+"0","MHSS_states <- MHSS_states[- grep(""HI|AK|AS|GU|PR|VI"", MHSS_states),]
+"
+"2","Error in `[.default`(MHSS_states, -grep(""HI|AK|AS|GU|PR|VI"", MHSS_states),  : 
+  incorrect number of dimensions
+"

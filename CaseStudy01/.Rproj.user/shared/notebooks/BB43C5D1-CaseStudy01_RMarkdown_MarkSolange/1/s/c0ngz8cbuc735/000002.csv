@@ -1,0 +1,24 @@
+"0","library(readr)"
+"0","Beers <- read_csv(""Beers.csv"")"
+"2","Parsed with column specification:
+cols(
+  Name = col_character(),
+  Beer_ID = col_integer(),
+  ABV = col_double(),
+  IBU = col_integer(),
+  Brewery_id = col_integer(),
+  Style = col_character(),
+  Ounces = col_double()
+)
+"
+"0","View(Beers)"
+"0","Breweries <- read_csv(""Breweries.csv"")"
+"2","Parsed with column specification:
+cols(
+  Brew_ID = col_integer(),
+  Name = col_character(),
+  City = col_character(),
+  State = col_character()
+)
+"
+"0","View(Breweries)"

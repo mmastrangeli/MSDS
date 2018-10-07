@@ -1,0 +1,3 @@
+"0","Breweries.Beers <- merge(Beers, Breweries, by.x = (""Brewery_id""), by.y = (""Brew_ID""), sort = TRUE)"
+"0","View(Breweries.Beers)"
+"0","head(Breweries.Beers, 6)"

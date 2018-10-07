@@ -1,0 +1,35 @@
+Summary
+========================================================
+author: Mark Mastrangeli and Solange Garcia De Alford
+date: October 7, 2018
+autosize: true
+
+Title Slide
+========================================================
+title: false
+Mark Mastrangeli and Solange Garcia De Alford
+MSDS 6306 - Case Study 1
+October 7, 2018
+
+Case Study 1 - Breweries and Beer
+========================================================
+
+For more details on authoring R presentations please visit <https://support.rstudio.com/hc/en-us/articles/200486468>.
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+Slide With Code
+========================================================
+
+```{r}
+summary(cars)
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```

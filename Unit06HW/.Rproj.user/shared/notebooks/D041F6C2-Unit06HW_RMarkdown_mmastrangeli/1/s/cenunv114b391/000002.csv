@@ -1,0 +1,2 @@
+"0","setwd(""/Users/mmastran/SMU/MSDS/github/MSDS/Unit06HW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/"")"
+"0","load(""N-MHSS-2015-DS0001-data-r.rda"", envir = parent.frame(), verbose = FALSE)"

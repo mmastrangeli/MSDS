@@ -1,0 +1,8 @@
+"0","MHSS_states <- unique(mh2015_puf$LST)"
+"0","str(MHSS_states)"
+"1"," Factor w/ 55 levels ""AK    "",""AL    "",..: "
+"1","2 1 5 3 6 7 8 10 9 11"
+"1"," ..."
+"1","
+"
+"0","count(MHSS_states)"

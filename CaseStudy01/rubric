@@ -1,0 +1,31 @@
+Rubric
+
+Rubric – Case Study 1
+Questions – 60%
+•	7 Questions: not equally weighted.  The harder questions are worth more points.
+•	Taking off for cumulative errors will not be a thing, provided the answer is well-reasoned based on prior questions’ answers.
+•	Documentation: RMarkdown should answer questions explicitly and professionally
+Presentation – 20%	
+•	Communication and presentation of your findings are critical to being a successful data scientist.  You will be graded on:
+o	Voice inflection
+o	Eye Contact
+o	Content Knowledge
+o	Slide Organization / Content
+o	Visualization 
+o	Question Response
+o	Composure: This will be mostly not reading off of the slides.  
+o	Pace: Not going a second over 5 minutes.  The CEO and CFO are very strict on this point.  
+Note: While each member of the team will receive the same grade on the paper, they will receive a different grade on the presentation.  One member’s presentation will not affect anyone else’s presentation grade. Each member of the team should present solutions to all 7 questions.  You may develop the slides for the presentation together and use the same deck or you may make your own slides, but each team member must make their own 5 minute video and post it to YouTube separately (unique URL).       
+GitHub – 10%
+•	Sensible structuring (location) of files in repository
+•	Readme/Codebook
+o	More or less equal representation of commits
+o	Include what people worked on what in Readme
+o	Look back on commits to brush up
+o	Every object assigned is detailed in Codebook portion
+Peer Grading – 10% Send a review of your performance and your teammate’s performance to my email.  Honest (but not rude) appraisal is fair game.  Your review will not be shared with your teammate.  Give them a score from 0 to 10.  Most people should fall between a 6 to 10 (D to A) range.  5 or lower (F) is reserved for particularly difficult teammates.  Grade your own effort on this metric as well.
+•	Failure to turn in a review will result in a zero for this section and will not affect your partner’s grade.  As such, make sure your review goes through to my email.  I’ll respond back within a day of receiving.
+•	Please wait to do this after you have submitted the project, not during.  It is still due by the same deadline, but unless the situation is absolutely egregious, give your teammate a chance to improve.  If it is that bad, reach out.
+•	This metric should not be a measure of your partner’s coding ability, but the amount of effort they put in.  If they are well-meaning but make mistakes, that is not cause to dock them points.  It should be reserved for no-shows, careless work, or laziness.  
+•	Make yourself available and accountable.  By signing up for this course, you committed and will need to make time to work on the project.  We are all busy adults; you must manage your time well and meet halfway on your partner’s schedule.
+•	Finally: The grades, in the end, are up to me.  Make your case with a convincing argument in a review.  If I disagree with your assessment, I may grant the person more (or fewer!) points.  Your peer grade is not necessarily reflective of your peer’s choice.

@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1538947117472.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2455170811",
+    "id" : "465203F3",
+    "lastKnownWriteTime" : 1538951228,
+    "last_content_update" : 1538951228776,
+    "path" : "~/SMU/MSDS/github/MSDS/CaseStudy01/CaseStudy01_RMarkdown_MarkSolange.Rmd",
+    "project_path" : "CaseStudy01_RMarkdown_MarkSolange.Rmd",
+    "properties" : {
+        "cursorPosition" : "64,48",
+        "last_setup_crc32" : "589D2951bb338d19",
+        "scrollLine" : "50",
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
