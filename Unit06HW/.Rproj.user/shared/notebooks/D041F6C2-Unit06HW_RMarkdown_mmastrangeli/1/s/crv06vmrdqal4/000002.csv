@@ -1,0 +1,33 @@
+"0","library(base)"
+"0","library(stats)"
+"0","library(plyr)"
+"0","library(dplyr)"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:plyr’:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise, summarize
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(tidyr)"
+"0","library(stringi)"
+"0","library(stringr)"
+"0","library(rvest)"
+"2","Loading required package: xml2
+"
+"0","library(ggplot2)"
+"0","setwd(""/Users/mmastran/SMU/MSDS/github/MSDS/Unit06HW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/"")"
+"2","The working directory was changed to /Users/mmastran/SMU/MSDS/github/MSDS/Unit06HW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data inside a notebook chunk. The working directory will be reset when the chunk is finished running. Use the knitr root.dir option in the setup chunk to change the working directory for notebook chunks."
+"0","load(""N-MHSS-2015-DS0001-data-r.rda"", envir = parent.frame(), verbose = FALSE)"
