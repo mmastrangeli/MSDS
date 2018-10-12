@@ -1,0 +1,6 @@
+"0","Breweries_Beers <- merge(Beers, Breweries, by.x = (""Brewery_id""), by.y = (""Brew_ID""), sort = TRUE)"
+"0","#View(Breweries_Beers)"
+"0","`colnames<-`(Breweries_Beers$Name.x, ""Beer_Name"")"
+"2","Error in `colnames<-`(Breweries_Beers$Name.x, ""Beer_Name"") : 
+  attempt to set 'colnames' on an object with less than two dimensions
+"

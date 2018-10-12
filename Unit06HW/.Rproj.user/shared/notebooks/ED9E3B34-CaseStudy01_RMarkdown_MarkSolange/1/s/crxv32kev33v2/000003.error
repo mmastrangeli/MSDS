@@ -1,0 +1,1 @@
+{"frames":[{"character_number":0,"end_character_number":0,"end_line_number":0,"file":"","func":"tapply(Breweries.Beers$ABV, Breweries.Beers$State, median, na.rm = TRUE)","line_number":0}],"message":"Error in tapply(Breweries.Beers$ABV, Breweries.Beers$State, median, na.rm = TRUE) : \n  object 'Breweries.Beers' not found\n"}

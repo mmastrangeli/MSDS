@@ -1,0 +1,95 @@
+---
+title: "CaseStudy01RMD_MarkSolange"
+author: "Mark Mastrangeli & Solange"
+date: "10/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Parsing data from .csv into dataframes 'Beers' and 'Breweries'
+```{r , echo=TRUE}
+library(readr)
+Beers <- read_csv("Beers.csv")
+#View(Beers)
+Breweries <- read_csv("Breweries.csv")
+#View(Breweries)
+```
+
+##Questions
+*1.	How many breweries are present in each state?
+```{r, echo=FALSE}
+table(Breweries$State)
+
+
+
+```
+2.	Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.
+```{r, echo=FALSE}
+Breweries_Beers <- merge(Beers, Breweries, by.x = ("Brewery_id"), by.y = ("Brew_ID"), sort = TRUE)
+#View(Breweries_Beers)
+
+head(Breweries_Beers, 6)
+tail(Breweries_Beers, 6)
+
+```
+
+3.	Report the number of NA's in each column.
+```{r , echo=TRUE}
+colSums(is.na(Breweries_Beers))
+
+```
+
+4.	Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+```{r , echo=TRUE}
+
+
+State_ABV_Median <- tapply(Breweries_Beers$ABV, Breweries_Beers$State, median, na.rm = TRUE)
+State_ABV_Median
+
+
+State_IBU_Median <- tapply(Breweries_Beers$IBU, Breweries_Beers$State, median, na.rm = TRUE)
+State_IBU_Median
+```
+5.	Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+```{r , echo=TRUE}
+
+MaxABV <- max(Breweries_Beers$ABV, na.rm = TRUE)
+MaxABV
+MaxIBU <- max(Breweries_Beers$IBU, na.rm = TRUE)
+MaxIBU
+
+#Display the Row from the Breweries.Beers data frame for which Breweries.Beers$ABV = MaxABV
+
+#Display the Row from the Breweries.Beers data frame for which Breweries.Beers$IBU = MaxIBU
+
+#Display the State with MaxABV
+
+#Display the State with MaxIBU
+
+```
+
+
+6.	Summary statistics for the ABV variable.
+```{r , echo=TRUE}
+summary()
+```
+
+
+7.	Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.
+```{r , echo=TRUE}
+ABV_State <- tapply(Breweries_Beers$ABV, Breweries_Beers$State, median, na.rm = TRUE)
+ABV_State
+IBU_State <- tapply(Breweries_Beers$IBU, Breweries_Beers$State, median, na.rm = TRUE)
+IBU_State
+```
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

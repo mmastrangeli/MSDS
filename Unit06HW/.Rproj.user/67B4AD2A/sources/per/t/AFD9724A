@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1539133893809.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "AFD9724A",
+    "lastKnownWriteTime" : 2484628534807494662,
+    "last_content_update" : 1539133893809,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "9066BF1F",
+        "caption" : "Breweries_Beers",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=Breweries_Beers&cache_key=9066BF1F",
+        "displayedObservations" : 2410,
+        "environment" : "",
+        "object" : "Breweries_Beers",
+        "preview" : 0,
+        "totalObservations" : 2410,
+        "variables" : 10
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

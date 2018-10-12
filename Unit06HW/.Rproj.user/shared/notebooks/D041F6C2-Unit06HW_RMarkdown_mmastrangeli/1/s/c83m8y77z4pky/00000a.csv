@@ -1,0 +1,4 @@
+"0","#Make States a factor in order to color bars of chart by state"
+"0","VAMC_State_Count$State <- factor(VAMC_State_Count$State, levels = VAMC_State_Count$State)"
+"0","#Plot the Number of VAMC per state and order"
+"0","ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$State, VAMC_State_Count$`Number of VAMC`), VAMC_State_Count$`Number of VAMC`)) + geom_bar(aes(fill=VAMC_State_Count$State), stat=""identity"") + ggtitle(""Distribution of VA Medical Centers in continental US"") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position=""none"") + scale_color_manual(values = LST) + labs(title=""Number of Veterans Affairs Medical Centers by State"", fill = ""State"", x= ""State"", y= ""VAMC Count"")"

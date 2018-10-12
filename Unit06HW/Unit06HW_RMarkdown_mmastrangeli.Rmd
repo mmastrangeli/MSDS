@@ -5,14 +5,13 @@ date: "9/17/2018"
 output:
   html_document:
     keep_md: yes
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(dplyr)
-library(ggplot2)
-library(tidyr)
+library(base)
+library(tidyverse)
+library(knitr)
 
 
 ```
@@ -23,11 +22,13 @@ It does not have to be in data frame format. A vector is fine.
 *Alaska, Hawaii, and U.S. territories should be omitted. DC, while not a state, is in the mainland, so it should remain included. Convert this to data.frame() 
 
 ```{r}
-##HW06 1a, 1b, 1c
 #replace LST column with cleaner data
-load("/Users/mmastran/SMU/MSDS/github/MSDS/Unit06HW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda", envir = parent.frame(), verbose = FALSE)
+
+load("/Users/mmastran/SMU/MSDS/github/MSDS/Unit06HW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+#str(mh2015_puf)
 VAMC <- mh2015_puf
-load
+
+
 VAMC$LST <- trimws(as.character(VAMC$LST))
 #replace FACILITYTYPE with cleaner data
 VAMC$FACILITYTYPE <- as.numeric(VAMC$FACILITYTYPE)
@@ -43,7 +44,7 @@ VAMC <- subset.data.frame(VAMC, !(LST %in% Excluded_States))
 #Count Number of VAMC per state and rename columns
 VAMC_State_Count <- count(VAMC, VAMC$LST)
 colnames(VAMC_State_Count) <- c("State", "Number of VAMC")
-View(VAMC_State_Count, "US Mainland States with VA Medical Centers")
+#view(VAMC_State_Count, "US Mainland States with VA Medical Centers")
 
 ```
 
@@ -99,10 +100,10 @@ VAMC_State_Count$`VAMC Per 1000mi` <- round(VAMC_State_Count$`VAMC Per 1000mi`, 
 ```{r}
 VAMC_State_Count$`State Name` <- factor(VAMC_State_Count$`State Name`, levels = VAMC_State_Count$`State Name`)
 
-VAMC_State_Count_Plot <-ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$`State Name`, VAMC_State_Count$`VAMC Per 1000mi`), VAMC_State_Count$`VAMC Per 1000mi`)) + geom_bar(aes(fill=VAMC_State_Count$`State Name`), stat="identity") + ggtitle("Density of VA Medical Centers Per US Continental State") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position="none") + scale_color_manual(values = `State Name`) + labs(title="Number of VAMC per 1000 SqMi per State", fill = "State", x= "State", y= "VAMC Count per 1000 SqMi")
+ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$`State Name`, VAMC_State_Count$`VAMC Per 1000mi`), VAMC_State_Count$`VAMC Per 1000mi`)) + geom_bar(aes(fill=VAMC_State_Count$`State Name`), stat="identity") + ggtitle("Density of VA Medical Centers Per US Continental State") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position="none") + scale_color_manual(values = `State Name`) + labs(title="Number of VAMC per 1000 SqMi per State", fill = "State", x= "State", y= "VAMC Count per 1000 SqMi")
 
 
-VAMC_State_Count_Region_Plot <- ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$Region, VAMC_State_Count$`VAMC Per 1000mi`), VAMC_State_Count$`VAMC Per 1000mi`)) + geom_bar(aes(fill=VAMC_State_Count$`State Name`), stat="identity") + ggtitle("Density of VA Medical Centers Per US Continental State") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position="none") + scale_color_manual(values = `State Name`) + labs(title="Number of VAMC per 1000 SqMi per State", fill = "State", x= "State", y= "VAMC Count per 1000 SqMi")
+ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$Region, VAMC_State_Count$`VAMC Per 1000mi`), VAMC_State_Count$`VAMC Per 1000mi`)) + geom_bar(aes(fill=VAMC_State_Count$`State Name`), stat="identity") + ggtitle("Density of VA Medical Centers Per US Continental State") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position="none") + scale_color_manual(values = `State Name`) + labs(title="Number of VAMC per 1000 SqMi per State", fill = "State", x= "State", y= "VAMC Count per 1000 SqMi")
 
 ```
 	

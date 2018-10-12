@@ -1,0 +1,205 @@
+---
+  title: 
+author: 
+date: 
+output: 
+  html_document:
+  keep_md: true
+---
+  
+  ```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Breweries
+
+
+
+## Analysis 1: Number of Breweries per US State
+In this analysis, raw brewery data is imported and analyzed to find the number of breweries in each state.
+
+```{r num_breweries}
+# Import breweries data and preview data structure.
+breweries = read.csv("/Breweries.csv", header=TRUE)
+str(breweries)
+
+# Entries in 'State' column start with a space.
+# Clean data by removing leading white-space and verify new structure.
+breweries$State = as.factor(trimws(breweries$State))
+str(breweries)
+
+# Print number of breweries in each state.
+# Since each row is a brewery, the number of occurrences of each state equals the number of breweries in that state.
+breweries.by.state = tapply(breweries$State, breweries$State, length)
+print(breweries.by.state)
+```
+
+The preceding table lists the number of breweries located in each state. There are 558 breweries total in the data set, and the number of breweries in each state ranges from 1 to 47.  An interesting observation of the numbers of breweries per state show a trend that more populous states generally have more breweries with a correlation to the populations.  California, Texas, and New York have 39, 28, and 19 breweries respectively which roughly calculates to 1 brewery per million inhabitants (http://www.enchantedlearning.com/usa/states/population.shtml).  Likewise North Dakota and South Dakota follow that same trend having only 1 brewery each and a population of less than 1 million each.  Nevertheless, there are outliers like Colorado that have the highest number of total breweries with 47 and a population of around 5.3 million, giving them a ratio of 6 breweries per 1 million inhabitants.
+
+## Analysis 2: Merge of Beer & Breweries Data
+In this analysis, raw beer data is imported and merged with the brewery data from the previous analysis. The first and last 6 observations of this merged data set are printed to verify the structure of the merged dataset.
+
+```{r data_merge}
+# Import beer data and preview data structure.
+beers = read.csv("Raw Data/Beers.csv", header=TRUE)
+str(beers)
+
+# Change Brewery ID column name for beer data to match brewery data.
+names(beers)[5] = "Brew_ID"
+
+# Merge beer and brewery data by 'Brew_ID' and preview naming structure.
+brew.data = merge(breweries, beers, by="Brew_ID", all=TRUE)
+names(brew.data)
+
+# Rename variables to be meaningful and verify new structure.
+names(brew.data) = replace(names(brew.data), c(2, 5), c('Brew_Name', 'Beer_Name'))
+str(brew.data)
+
+# Print first 6 and last 6 observations of the merged data for verification.
+head(brew.data, 6)
+tail(brew.data, 6)
+```
+
+The beer and brewery datasets have been merged (by Brewery ID) successfully. To verify the structure of the merged data, the first and last 6 rows are printed above.  This gives a comprehensive link between all of the imported data.
+
+## Analysis 3: Missing Data (NA's in each column)
+
+The analysis below examines the data to see which values are missing per observation or per row in order to determine how representative the data will be after all subsequent analysis is completed.
+
+```{r data_missing}
+# Create Vector Dataframe which indicates the missing data (NA's)  in each columns as TRUE or FALSE.
+brew.data.missing = is.na(brew.data)
+
+# Null out vector to be used in for loop
+number_NAs = NULL
+
+# Though not intended, creates vector of "Named ints" where the name of the row associated with each int value
+for (i in colnames(brew.data.missing))
+{
+  tempvec = brew.data.missing[,i]
+  number_NAs[i] = length(tempvec[tempvec != FALSE])
+}
+
+print(number_NAs)
+```
+
+From a total of 2,004 total different brews. The results above indicate that out of the 2,004 total, 62 of the beers will not have an indication of its Alcohol By Volume (ABV) and 1,005 beers will not indicate their International Bitterness Unit (IBU).  This means that trying to make assumptions on ABV and IBU will only be valid for around half the data collected.
+
+## Analysis 4: Compute median alcohol content (ABV) and international bitterness unit (IBU) per each state.
+
+The analysis below will compute the mid-range (median) of the alcohol content or alcohol per volume (ABV) and international bitterness unit (IBU) per state where that data is available to determine if there is a specific trend or culture associated with the breweries in a specific state.
+
+```{r data_abv_ibu, fig.width=10, fig.height=9}
+# Use "tapply" to find the the median IBU per state
+ABV_medians = tapply(brew.data$ABV   # Take the IBU column (numeric)
+                     , brew.data$State # Use the State column as the index (as factor) to associate IBU per State
+                     , function (x) {median(x, na.rm = TRUE)} #Run created function finding the median per State removing NULLs
+)
+
+#Print out the results
+cat("The Median Alcohol Content (ABV) per state:\n") #using cat to preserve the \n
+print(ABV_medians)
+
+#barplot of the ABV medians
+par(las = 2) #make the x axis name horizontal with the horizontal view
+par(mar=c(5,10,4,2)) # increase y-axis margin (c(bottom, left, top, right))
+barplot(ABV_medians
+        , main="Median Alcohol Content (ABV) per State"
+        , xlab="Median ABV"
+        , ylab="States"
+        , cex.names=0.7 #Font Size for the State names to squeeze them all in
+        , col=c("red","green","blue","orange","brown","purple","yellow")
+        , horiz=TRUE
+)
+
+# Use "tapply" to find the the median IBU per state
+IBU_medians = tapply(brew.data$IBU   # Take the IBU column (numeric)
+                     , brew.data$State # Use the State column as the index (as factor) to associate IBU per State
+                     , function (x) {median(x, na.rm = TRUE)} #Run created function finding the median per State removing NULLs
+)
+
+#Print out the results
+cat("The International Bitterness Unit (IBU) per each state:\n") #using cat to preserve the \n
+print(IBU_medians)
+
+#barplot of the ABV medians
+par(las = 2) #make the y axis name horizontal with the horizontal view
+par(mar=c(5,10,4,2)) # increase y-axis margin (c(bottom, left, top, right))
+barplot(IBU_medians
+        , main="Median International Bitterness Unit (IBU)  per State"
+        , xlab="Median IBU"
+        , ylab="States"
+        , cex.names=0.7 #Font Size for the State names to squeeze them all in
+        , col=c("red","green","blue","orange","brown","purple","yellow")
+        , horiz=TRUE
+)
+
+```
+
+As per the bar plots above, the states with the highest middle or median alcohol content are DC (Washington DC) and Kentucky is around 6.25%.  Seems like a bit of political play with the politicians in DC to have such strong beer.  On the flip side, the states brewing bear with a lesser alcohol content are Utah and New Jersey with a median ABV or 4% and 4.6% respectively.  To put this more into perspective, some of the mass-produced beers like Budweiser has a %5.0 ABV, while Bud Light and Miller Light both have 4.2% (http://www.realbeer.com/edu/health/calories.php).
+
+Likewise, the states making the most bitter beer are Maine followed by West Virginia, while the states brewing the least bitter beer are Wisconsin then Kansas, with South Dakota not having any bitterness data for their brews.  As a note on this, only around half of the beers had bitterness data, so results could differ if there was more data concerning other beers.
+
+## Analysis 5: Show which state has the maximum alcoholic (ABV) beer and well as the most bitter.
+
+```{r data_state_statistics}
+### to get the Maximum Alcoholic beer per state
+ABV=brew.data[c('State','ABV')] # Obtain data for alcoholic contents per state
+print("State with highest ABV Beer:")
+ABV[which.max(brew.data$ABV),]['State']  # get the maximum of Alcoholic content out of all states
+
+IBU=brew.data[c('State','IBU')] # Obtain data for bitterness in beer per state
+print("State with highest IBU Beer:")
+IBU[which.max(brew.data$IBU),]['State'] # get the most bitter beer out of all states
+
+```
+Colorado has the beer with the maximum alcoholic contents of 12.6% alcohol content by volume (ABV) from a beer called "Lee Hill Series Vol. 5".  Colorado, with 47 breweries, the highest amount breweries than any other state and one of the highest ratios of breweries per population with 6 breweries per 1 million inhabitants; each brewery likely has to contend with many other varieties and must have a distinguishing beer in their repertoire of brews.  Oregon has the beer suitably named "Bitter Bitch Imperial" with the most bitter beer taste and highest international bitterness unit (IBU) of 138.
+
+## Analysis 6: Summary of statistics for the alcohol content (ABV).
+
+```{r data_abv_stats}
+#Summary of Alcoholic contents in beer
+summary(ABV$ABV)
+#Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#0.00100 0.05000 0.05600 0.05977 0.06700 0.12800      62 
+
+```
+To put the statistics in perspective, As per the summary results above, the Maximum Alcoholic content (ABV) in beer is 12.8% which is in Colorado and minimum is in California which is 0.1%, while the Median is 5.6% and the average ABV iss 5.9%.  As per the previous note, mass produced beers like Bud Light and Budweiser are generally between %4.2 and %5.0 respectively, so this puts the average craft brews a slight bit higher in terms of average alcohol content.
+
+## Analysis 7: Prove relationship between the bitterness of the beer and its alcoholic content.
+
+The plot analysis below depicts the relationship between the bitterness of the beer and its alcoholic content using a scatter plot with a smoothed line that is meant to easily demonstrate any apparent data pattern.
+
+```{r ibu_vs_abv, fig.width=10, fig.height=9}
+# Invoking library to use ggplot2
+library(ggplot2)
+
+# Assigning 'IBU' and 'ABV' columns from brew data frame to 'IBU_ABV' variable
+IBU_ABV = brew.data[c('IBU','ABV')]
+
+# Setting up basic plot 
+basic_plot = ggplot(IBU_ABV, # Assign data using 'IBU_ABV' variable 
+                    aes(IBU,ABV)) # Construct aesthetic mappings for two data columns
+
+# Add scatter points to basic plot along with axis labels and a plot title  
+scatter_with_labels = basic_plot + 
+  geom_point(na.rm = TRUE) +  # scatter points added 
+  labs(x = "IBU", 
+       y = "ABV", 
+       title= "Alcohol Content (ABV) vs. International Bitterness Unit (IBU) per Brew")
+
+# Add regression line smoothing to aid in seeing patterns
+scatter_smoothed = scatter_with_labels + 
+  stat_smooth(method="auto"  # line smoothing call
+              ,na.rm = TRUE) # silently remove missing values without warning 
+
+# Display the scatter plot
+scatter_smoothed 
+
+
+
+```{r environment_notes, echo=FALSE}
+sessionInfo()
+
+```

@@ -1,0 +1,4 @@
+"0","ABV_State <- tapply(Breweries.Beers$ABV, Breweries.Beers$State, median, na.rm = TRUE)"
+"2","Error in tapply(Breweries.Beers$ABV, Breweries.Beers$State, median, na.rm = TRUE) : 
+  object 'Breweries.Beers' not found
+"

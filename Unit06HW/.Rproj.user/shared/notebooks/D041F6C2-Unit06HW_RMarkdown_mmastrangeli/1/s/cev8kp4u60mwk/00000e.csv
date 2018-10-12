@@ -1,0 +1,3 @@
+"0","VAMC_State_Count <- merge(VAMC_State_Count, statesize)"
+"0","VAMC_State_Count$`VAMC Per 1000mi` <- VAMC_State_Count$`Number of VAMC`/(VAMC_State_Count$SqMiles/1000)"
+"0","VAMC_State_Count$`VAMC Per 1000mi` <- round(VAMC_State_Count$`VAMC Per 1000mi`, digits = 3)"

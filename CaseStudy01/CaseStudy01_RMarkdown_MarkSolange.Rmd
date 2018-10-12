@@ -1,6 +1,6 @@
 ---
 title: "CaseStudy01RMD_MarkSolange"
-author: "Mark Mastrangeli"
+author: "Mark Mastrangeli & Solange"
 date: "10/7/2018"
 output: html_document
 ---
@@ -9,18 +9,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
 
 ## Parsing data from .csv into dataframes 'Beers' and 'Breweries'
 ```{r , echo=TRUE}
-library(readr)
-Beers <- read_csv("Beers.csv")
-View(Beers)
-Breweries <- read_csv("Breweries.csv")
-View(Breweries)
+library(base)
+library(tidyverse)
+library(knitr)
+
+Beers <- read_csv("Beers.csv", col_names = TRUE, trim_ws = TRUE, na = "NA")
+#View(Beers)
+Breweries <- read_csv("Breweries.csv", col_names = TRUE, trim_ws = TRUE, na = "NA")
+#View(Breweries)
 ```
 
 ##Questions
@@ -33,36 +32,44 @@ table(Breweries$State)
 ```
 2.	Merge beer data with the breweries data. Print the first 6 observations and the last six observations to check the merged file.
 ```{r, echo=FALSE}
-Breweries.Beers <- merge(Beers, Breweries, by.x = ("Brewery_id"), by.y = ("Brew_ID"), sort = TRUE)
-View(Breweries.Beers)
-head(Breweries.Beers, 6)
-tail(Breweries.Beers, 6)
+Breweries_Beers <- merge(Beers, Breweries, by.x = ("Brewery_id"), by.y = ("Brew_ID"), sort = TRUE)
+#View(Breweries_Beers)
+
+head(Breweries_Beers, 6)
+tail(Breweries_Beers, 6)
+
 ```
 
 3.	Report the number of NA's in each column.
 ```{r , echo=TRUE}
-# Number of NA's per Column
-colSums(is.na(Breweries.Beers))
-
+colSums(is.na(Breweries_Beers))
+#Can we display this somehow? 
 ```
 
 4.	Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
 ```{r , echo=TRUE}
 
 
-State_ABV_Median <- tapply(Breweries.Beers$ABV, Breweries.Beers$State, median, na.rm = TRUE)
+State_ABV_Median <- tapply(Breweries_Beers$ABV, Breweries_Beers$State, median, na.rm = TRUE)
 State_ABV_Median
 
 
-State_IBU_Median <- tapply(Breweries.Beers$IBU, Breweries.Beers$State, median, na.rm = TRUE)
+State_IBU_Median <- tapply(Breweries_Beers$IBU, Breweries_Beers$State, median, na.rm = TRUE)
 State_IBU_Median
+ggplot(State_IBU_Median, aes(x=))
+
+
+#Make States a factor in order to color bars of chart by state
+#State_IBU_Median$ <- factor(State_IBU_Median, levels = State_IBU_Median)
+#Plot the Number of VAMC per state and order
+#ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$State, VAMC_State_Count$`Number of VAMC`), VAMC_State_Count$`Number of VAMC`)) + geom_bar(aes(fill=VAMC_State_Count$State), stat="identity") + ggtitle("Distribution of VA Medical Centers in continental US") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position="none") + scale_color_manual(values = LST) + labs(title="Number of Veterans Affairs Medical Centers by State", fill = "State", x= "State", y= "VAMC Count")
 ```
 5.	Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
 ```{r , echo=TRUE}
 
-MaxABV <- max(Breweries.Beers$ABV, na.rm = TRUE)
+MaxABV <- max(Breweries_Beers$ABV, na.rm = TRUE)
 MaxABV
-MaxIBU <- max(Breweries.Beers$IBU, na.rm = TRUE)
+MaxIBU <- max(Breweries_Beers$IBU, na.rm = TRUE)
 MaxIBU
 
 #Display the Row from the Breweries.Beers data frame for which Breweries.Beers$ABV = MaxABV
@@ -78,15 +85,15 @@ MaxIBU
 
 6.	Summary statistics for the ABV variable.
 ```{r , echo=TRUE}
-summary()
+#Need to display a summary of our findings
 ```
 
 
 7.	Is there an apparent relationship between the bitterness of the beer and its alcoholic content? Draw a scatter plot.
 ```{r , echo=TRUE}
-ABV_State <- tapply(Breweries.Beers$ABV, Breweries.Beers$State, median, na.rm = TRUE)
+ABV_State <- tapply(Breweries_Beers$ABV, Breweries_Beers$State, median, na.rm = TRUE)
 ABV_State
-IBU_State <- tapply(Breweries.Beers$IBU, Breweries.Beers$State, median, na.rm = TRUE)
+IBU_State <- tapply(Breweries_Beers$IBU, Breweries_Beers$State, median, na.rm = TRUE)
 IBU_State
 ```
 
