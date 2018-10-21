@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(base)
 library(tidyverse)
 library(knitr)
+library(stats)
 ### Executive Summary
 
 ### The data analisys is based on data provided by our data sourcing contracting company. The data provide a number of independent breweries located in the United States accompanied by a list of the beer products these breweries sell.  The analisys provides the answers to the questions of interest submitted with the analysis request, such as how many breweries are there in each state, highest acohol contents, highest bitternes, etc.
