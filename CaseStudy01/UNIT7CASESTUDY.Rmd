@@ -1,6 +1,6 @@
 ---
-title: "Unit 7"
-author: "Solange GarciadeAlford"
+title: "Case Study 01"
+author: "Solange GarciadeAlford and Mark Mastrangeli"
 date: "October 10, 2018"
 output: 
   html_document:
