@@ -25,8 +25,8 @@ Breweries <- read_csv("Breweries.csv", col_names = TRUE, trim_ws = TRUE, na = "N
 ##Questions
 *1.	How many breweries are present in each state?
 ```{r, echo=FALSE}
-table(Breweries$State)
-
+#table(Breweries$State)
+View(table(Breweries$State))
 
 
 ```

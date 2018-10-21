@@ -1,0 +1,321 @@
+---
+title: "Unit 7"
+author: "Solange GarciadeAlford"
+date: "October 10, 2018"
+output: 
+  html_document:
+    keep_md: true 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+## Introduction
+```{r}
+library(base)
+library(tidyverse)
+library(knitr)
+### Executive Summary
+
+### The data analisys is based on data provided by our data sourcing contracting company. The data provide a number of independent breweries located in the United States accompanied by a list of the beer products these breweries sell.  The analisys provides the answers to the questions of interest submitted with the analysis request, such as how many breweries are there in each state, highest acohol contents, highest bitternes, etc.
+
+### We assgined some of our finest data scientists to this project to explore and report on these data which, we know, will be pivotal in your future business and marketing decisions.
+
+
+
+```
+## Questions of Interest
+```{r}
+
+## Q1 - How many brewries are present in each state?
+
+
+#### We first loaded the data into the software tool, then our code finds the number of brewries by state. 
+#### In order to find the number of brewries by state, we used the "tidyverse" package in conjunction with the plyr library.
+#### Interestingly, we found that the maximum number of breweries in one particular state was 47, in the state of Colorado.
+
+setwd("~/SMU/MSDS/github/MSDS/CaseStudy01")
+bedata <- read_csv("Beers.csv")
+View(Beers)
+
+## The Beers dataset contains a list of 2410 US craft beers 
+bedata <- read_csv("Beers.csv", col_names = TRUE, trim_ws = TRUE, na = "NA")
+#View(Beers)
+## the Breweries dataset contains 558 US breweries. 
+brdata <- read_csv("Breweries.csv", col_names = TRUE, trim_ws = TRUE, na = "NA")
+
+#brdata <- read.csv(Breweries.csv)
+
+
+### Tables 1.1 and 1.2 display the structure of the imported data files
+str(brdata)
+str(bedata)
+
+options(repos="https://cran.rstudio.com" )
+
+
+
+
+
+countbreweries <- data.frame(count(brdata, c("State")))
+
+
+### Table 1.3 displays the structure of the file with the count of brewries by state
+str(countbreweries)
+
+
+
+
+
+
+##### Q1A - Display 1 shows how many breweries there are in each state
+
+ggplot(data=countbreweries, aes(x=State, y=freq)) +   
+geom_bar(aes(fill = freq), position = "dodge", stat="identity") +
+theme(axis.text.x = element_text(face="bold" ,color="#393355", 
+                           size=7, angle=90),
+        axis.text.y = element_text(face="bold", color="#393355", 
+                           size=10, angle=90)) +
+geom_text(aes(label = freq), vjust = -0.3) +
+ylab("Number of Breweries") +
+xlab("State") +
+labs(title = "                     Number of Breweries in each State") +
+labs(caption = "(Display 1 - Based on data provided)")
+
+
+
+
+## Q2 - Merge beer data with the breweries data. Print the first 6 observations and the last s, ix observations to check the merged file.
+
+
+#### The files were merged so that we could look at the data in one single file and allow us to provide answers to the additional questions of interest.
+
+
+#### We changed the name of the column in the satesize data frame in preparation for merging the files, and used the merge function to join the files.  To provide a visual of the resulting file we printed the firt six rows and the last six rows.
+
+names(brdata)[1] <- "Brewery_id"
+str(brdata)
+
+
+
+
+##### Q2A Tables 2.1-2.3 show the structure, and the first and last 6 records of the new merged data.
+mdata <- merge(brdata, bedata , by = "Brewery_id")
+
+### Table 2.1
+str(mdata)
+
+### Table 2.2
+head(mdata)
+
+### Table 2.3
+tail(mdata)
+
+
+
+
+##Q3 - Report the number of NA's in each column.
+
+####  We also looked into each one of the fields to find the fields with missing data, this code also got us, not only a count of missing values, but a count of the fields with data. 
+
+BreweryIDNA <- data.frame(count(mdata$Brewery_id == "NA"))
+BreweryNameNA <- data.frame(count(mdata$Name.x == "NA"))
+BreweryCiTyNA <- data.frame(count(mdata$City == "NA"))
+BreweryStateNA <- data.frame(count(mdata$State == "NA"))
+BeerNameNA <- data.frame(count(mdata$Name.y == "NA"))
+BeerIDNA <- data.frame(count(mdata$Beer_ID == "NA"))
+BeerABVNA <- data.frame(count(mdata$ABV == "NA"))
+BeerIBUNA <- data.frame(count(mdata$IBU == "NA"))
+BeerStyleNA <- data.frame(count(mdata$Style == "NA"))
+BeerOZNA <- data.frame(count(mdata$Ounces == "NA"))
+
+
+##### Q3A - Tables 3.1 - 3.10 show the values missing in our data by variable
+
+### Table 3.1 - Number of rows where Brewery IDs are missing 
+BreweryIDNA 
+
+### Table 3.2 - Number of rows where Brewery names are missing
+BreweryNameNA 
+
+### Table 3.3 - Number of rows where the breweries' city is missing
+BreweryCiTyNA 
+
+### Table 3.4 - Number of rows where the breweries' state is missing
+BreweryStateNA 
+
+### Table 3.5 - Number of rows where beer names are missing
+BeerNameNA 
+
+### Table 3.6 - Number of rows where beer ids are missing
+BeerIDNA 
+
+### Table 3.7 - Number of rows where ABV values are missing
+BeerABVNA 
+
+### Table 3.8 - Number of rows where IBU values are missing
+BeerIBUNA 
+
+### Table 3.9 - Number of rows where the beer style is missing
+BeerStyleNA
+
+### Table 3.10 - Number of rows where the beer oz measurement is missing
+BeerOZNA
+
+
+
+##Q4 - Compute the median alcohol content and international bitterness unit for each state. 
+
+#### The next question of interest was to find the median Alcohol by Volume of Beer and the median International bitternes unit for each one of the states and provide bar charts of the results.  
+
+#### We first calculated the median with the aggregate function available in the stats package, we looked at the first and last rows of the data frames to verify the reults, and then we plotted these data using ggplot2.
+
+
+
+median.ABV <- data.frame(aggregate(ABV ~ State, data = mdata, median))
+median.IBU <- data.frame(aggregate(IBU ~ State, data = mdata, median))
+
+
+
+####Q4Aa -  Tables 4.1-4.4 display the first and last 6 records of the ABV and IBU median data frames.
+
+head(median.ABV)
+tail(median.ABV)
+
+head(median.IBU)
+tail(median.IBU)
+
+
+#### I built a new data frame by combining the median aggregate resulting data frames by state. This may not have been necessary since I plotted the data on separate charts.
+
+medians.st <- merge(median.ABV, median.IBU , by = "State")
+str(medians.st)
+
+
+
+
+#####Q4Aa Display 2 shows the medians of International bitterness Unit by state.
+
+ggplot(data=medians.st, aes(x=State, y=IBU )) +   
+geom_bar(aes(fill = IBU), position = "dodge", stat="identity") +
+labs(title = "                Median International Bitterness Unit in each State") +
+labs(caption = "(Display 2 - Based on data provided)") +
+theme(axis.text.x = element_text(face="bold" ,color="#993333", 
+                           size=7, angle=90),
+        axis.text.y = element_text(face="bold", color="#993333", 
+                           size=10, angle=90)) +
+geom_text(aes(label = IBU), vjust = 0.5, size=3, angle=90, face="bold")
+
+
+  
+#####Q4Ab -  Display 3 shows the median Alcohol by volumen of beat in each state
+
+ggplot(data=medians.st, aes(x=State, y=ABV )) +   
+geom_bar(aes(fill = ABV), position = "dodge", stat="identity") +
+labs(title = "                Median Alcohol by Volume of Beer in each State") +
+labs(caption = "(Display 3 - Based on data provided)") +
+theme(axis.text.x = element_text(face="bold", color="#993333", 
+                           size=7, angle=90),
+        axis.text.y = element_text(face="bold", color="#993333", 
+                           size=10, angle=90)) +
+geom_text(aes(label = ABV), vjust = 0.5, size=3, angle=90, color="#993333", face="bold")
+
+
+
+
+
+## Q5 -- Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+
+#### To find out which state(s) have the maximum alcohol by volume and which states have the most bitter beer I used the max function and applied it to the respective variable in the medians.st table.  
+
+#### Since the max function for ABV resulted in more than 1 value, i.e., there are 2 states that hold the max alcohol by volume value, I created a data frame to find the names of the states.  I utlized a similar technique to find the state with the max IBU value.
+
+
+a <- max(medians.st$ABV)
+b <- max(medians.st$IBU)
+a
+b
+
+c.df <- data.frame(which(medians.st$ABV == a))
+c.df
+c.df1 <- c.df[1,1]
+c.df2 <- c.df[2,1]
+c.df1
+c.df2
+
+st.medABV1 <- medians.st[8,]
+st.medABV2 <- medians.st[18,]
+st.medABV1
+st.medABV2
+
+
+
+
+
+##### Q5Aa  Kentucky and Washington, D.C, have the highest median alcoholic content (ABV) beers. Refer to Display 3.
+
+ci.df <- data.frame(which(medians.st$IBU == b))
+ci.df
+ci.df1 <- c.df[1,1]
+ci.df1
+
+st.medIBU <- medians.st[22,]
+st.medIBU
+
+##### Q5Ab  Maine is the state with the highest median IBU beer. Refer to Display 2.
+
+
+
+
+
+## Q6  - Summary statistics for the ABV variable.
+
+#### to find out the summary statistices on the ABV variable I used the summary function to get the median, mean and minimum and max values. 
+
+#### The ABV variable also has 62 rows out of 2410 rows where its value is null or N/A.  This may impact the results of the summary statistics and may not represent 100% accuracy.
+
+
+
+##### Q6A  Table 6.1 displays the summary statistics of alcohol by volumen of the beers in our data.
+
+### Table 6.1
+summary(mdata$ABV)
+
+
+
+
+## Q7 - There is an apparent relationship between the bitterness of the beer and its alcoholic content? 
+## Draw a scatter plot.
+
+#### As requested, a scatter plot was generated to represent the relationship between the alcoholic content and the bitterness of the beers.  This time we used the originally created mdata data frame to draw the conclution on the relationship by brandname. 
+
+#### I also found great scatterplot graphing tools on the Web, which I sued to build the plot.  We can find these tools at this link:
+
+#### http://www.sthda.com/english/wiki/ggplot2-scatterplot-easy-scatter-plot-using-ggplot2-and-r-statistical-software
+
+install.packages("devtools")
+library(devtools)
+install_github("easyGgplot2", "kassambara")
+library(easyGgplot2)
+
+
+
+
+##### Q7A Display 4 is a scatter plot to show the relationship between the Alcohol content by volume of beer versus the International Bitternes units.
+
+ggplot2.scatterplot(data=mdata, xName='ABV', yName='IBU', mapping=aes(size = qsec), addRegLine=TRUE, regLineColor="red", mainTitle='                                        AVB versus IBU', xtitle="Alcohol by Volume of Beer", ytitle="International Bitterness Units", shape=23, size=2, fill="navy")
+
+
+
+
+
+```
+
+## I
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
