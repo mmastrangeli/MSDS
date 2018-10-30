@@ -1,0 +1,311 @@
+---
+title: "Unit09HW"
+author: "Mark Mastrangeli"
+date: "10/28/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(base)
+library(tidyverse)
+library(knitr)
+setwd("~/SMU/MSDS/github/MSDS/Unit09HW")
+```
+
+Questions
+
+Background: Brewmeisters in Colorado and Texas have teamed up to analyze the relationship between ABV and IBU in each of their states.  Use the data sets from the project to help them in their analysis.  There three main questions of interest are 1) Is there a significant linear relationship between ABV (response) and IBU (explanatory), 2) Is this relationship different between beers in Colorado and Texas and 3) Is there a significant quadratic component in this relationship for either Colorado or Texas or both?  
+
+A. Clean an prepare the data:
+1. Create column for brewery ID that is common to both datasets similar to what you did in the project. So we can merge!
+2. Merge the beer and brewery data into a single dataframe.
+3. Clean the State Column … get rid of extraneous white space.  
+4. Create One Dataset that has only Colorado and Texas beers and no IBU NAs … name it “beerCOTX”
+5. Order beerCOTX by IBU (ascending) ... this will be important later in graphing
+
+
+
+```{r}
+Beers <- read_csv("Beers.csv", col_names = TRUE, trim_ws = TRUE, na = c("", "NA"), quoted_na = TRUE)
+#View(Beers)
+Breweries <- read_csv("Breweries.csv", col_names = TRUE, trim_ws = TRUE, na = c("", "NA"), quoted_na = TRUE)
+#View(Breweries)
+#View(table(Breweries$State))
+Breweries_Beers <- merge(Beers, Breweries, by.x = ("Brewery_id"), by.y = ("Brew_ID"), sort = TRUE)
+#colSums(is.na(Breweries_Beers))
+#View(Breweries_Beers)
+#head(Breweries_Beers, 6)
+#tail(Breweries_Beers, 6)
+Breweries_Beers <- as.data.frame(Breweries_Beers)
+colnames(Breweries_Beers) <- c("Brewery_ID", "Beer_Name", "Beer_ID", "ABV", "IBU", "Style", "Ounces", "Brewery_Name", "City", "State")
+
+COTX <- c("CO", "TX")
+beerCOTX <- subset.data.frame(Breweries_Beers, (State %in% COTX))
+ 
+beerCOTX <- subset(beerCOTX, !is.na(IBU))
+beerCOTXCount <- count(beerCOTX, vars = beerCOTX$State)
+colnames(beerCOTXCount) <- c("State", "BeerCount")
+beerCOTX <- beerCOTX[order(beerCOTX$IBU),] 
+beerTX <- subset.data.frame(beerCOTX, (State %in% "TX"))
+beerCO <- subset.data.frame(beerCOTX, (State %in% "CO"))
+
+State_ABV_Median <- tapply(Breweries_Beers$ABV, Breweries_Beers$State, median, na.rm = TRUE)
+#State_ABV_Median
+State_IBU_Median <- tapply(Breweries_Beers$IBU, Breweries_Beers$State, median, na.rm = TRUE)
+#State_IBU_Median
+MaxABV <- max(Breweries_Beers$ABV, na.rm = TRUE)
+#MaxABV
+MaxIBU <- max(Breweries_Beers$IBU, na.rm = TRUE)
+#MaxIBU
+ABV_State <- tapply(Breweries_Beers$ABV, Breweries_Beers$State, median, na.rm = TRUE)
+#ABV_State
+IBU_State <- tapply(Breweries_Beers$IBU, Breweries_Beers$State, median, na.rm = TRUE)
+#IBU_State
+
+```
+
+
+##B. Create an initial plots of the data
+*6. Plot ABV v. IBU for both Colorado and Texas (two separate plots) … use ggplot and facets.
+##C. Model the data
+*7. For each state, fit a simple linear regression model (Model 1:  ABV= β_0+β_1 IBU) to assess the relationship between ABV and IBU. Use the regular plot function in base R (not ggplot) to create a scatter plot with the regression line superimposed on the plot.  Again, this should be done for each state.  
+
+
+
+```{r}
+CO_Count <- as.integer(146)
+TX_Count <- as.integer(89)
+
+CO_ABV_Median <- tapply(beerCO$ABV, beerCO$State, median, na.rm = TRUE)
+CO_IBU_Median <- tapply(beerCO$IBU, beerCO$IBU, median, na.rm = TRUE)
+CO_ABV_Max <- max(beerCO$ABV, na.rm = TRUE)
+CO_IBU_Max <- max(beerCO$IBU, na.rm = TRUE)
+TX_ABV_Median <- tapply(beerTX$ABV, beerTX$State, median, na.rm = TRUE)
+TX_IBU_Median <- tapply(beerTX$IBU, beerTX$State, median, na.rm = TRUE)
+TX_ABV_Max <- max(beerTX$ABV, na.rm = TRUE)
+TX_IBU_Max <- max(beerTX$IBU, na.rm = TRUE)
+COTX_ABV_Median <- tapply(beerCOTX$ABV, beerCOTX$State, median, na.rm = TRUE)
+COTX_IBU_Median <- tapply(beerCOTX$IBU, beerCOTX$State, median, na.rm = TRUE)
+COTX_ABV_Max <- max(beerCOTX$ABV, na.rm = TRUE)
+COTX_IBU_Max <- max(beerCOTX$IBU, na.rm = TRUE)
+
+
+COfit = lm(beerCO$ABV ~ beerCO$IBU + beerCO$IBU,data = beerCO) # fit the model to get Beta_hat_0 and Beta_hat_1
+COcoefs <- coef(COfit)
+COSummary <- summary(COfit) # view the parameter estimate table
+COfit_r2 <- c("0.4433")
+COsigma <- sigma(COfit)
+TXfit = lm(beerTX$ABV ~ beerTX$IBU + beerTX$IBU,data = beerTX) # fit the model to get Beta_hat_0 and Beta_hat_1
+TXcoefs <- coef(TXfit)
+TXSummary <- summary(TXfit) # view the parameter estimate table
+TXfit_r2 <- c("0.596")
+TXsigma <- sigma(TXfit)
+COTXfit = lm(beerCOTX$ABV ~ beerCOTX$IBU + beerCOTX$IBU,data = beerCOTX) # fit the model to get Beta_hat_0 and Beta_hat_1
+COTXcoefs <- coef(COTXfit)
+COTXSummary <- summary(COTXfit) # view the parameter estimate table
+COTXfit_r2 <- c("0.5061")
+COTXsigma <- sigma(COTXfit)
+
+p <- ggplot(beerCOTX, aes(x=IBU, y=ABV, colour=State, size=ABV)) + geom_point()
+p
+p + stat_smooth(method = lm, se = FALSE, fullrange = TRUE, level = 0.99) + scale_shape_manual(values = c(20,20)) + scale_size_area() + scale_color_brewer(palette = "Set1")
+
+p + stat_smooth(method = lm, se = FALSE, fullrange = TRUE, level = 0.99) +scale_shape_manual(values = c(20,20)) + scale_size_area() + scale_color_brewer(palette = "Set1") + facet_wrap( ~ State)
+
+
+#barplot(beerCOTX$IBU)
+
+
+
+
+plot(beerTX$IBU,beerTX$ABV, pch = 20, col = "red", xlab = "International Bitterness Units", ylab ="Alcohol By Volume", main = "ABV v. IBU of Texas Beers", sub = "r^2 = 0.596")
+abline(TXcoefs[1], TXcoefs[2])
+TXsigma <- sigma(TXfit)
+
+plot(beerCO$IBU,beerCO$ABV, pch = 20, col = "blue", xlab = "International Bitterness Units", ylab = "Alcohol By Volume", main = "ABV v. IBU of Colorado Beers", sub = "r^2 = 0.4433")
+abline(COcoefs[1], COcoefs[2])
+
+
+plot(beerCOTX$ABV,beerCOTX$IBU, pch = 20, col = "blue", xlab = "International Bitterness Units", ylab = "Alcohol By Volume", main = "ABV v. IBU of Texas and Colorado Beers", sub = "r^2 = 0.5061")
+abline(COTXcoefs[1], COTXcoefs[2])
+
+TX_Confidence <- data.frame(ABV =.1)
+predict(TXfit, newdata = TX_Confidence, interval = 'confidence')
+
+COTX_Confidence <- data.frame(ABV=.1)
+predict(COTXfit, newdata = COTX_Confidence, interval = 'confidence')
+
+CO_Confidence <- data.frame(ABV=.1)
+predict(COfit, newdata = CO_Confidence, interval = 'confidence')
+
+```
+
+*8.  Address the assumptions of the regression model.  
+You may assume the data are independent (even if this is a stretch.):  
+**1. There is a normal distribution of the ABV for fixed values of IBU.
+
+**2. These normal distributions have equal standard deviations.  
+**3. The means of these normal distributions have a linear relationship with IBU.  
+**4. Independence ( you may assume this one to be true without defense.)
+
+##D. Gain inference from the model
+*9. Make sure and print the parameter estimate table.  
+**Interpret the slope of the regression model.  
+**You should have one sentence for each interpretation.  
+**In addition, answer the question: Is there evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers?  For now, this is a judgement call.
+
+Identify the null H0 and alternative hypothesis Ha
+Find the critical value using a two-tailed test
+Find the statistic (t-value) for the data
+Find the p value
+Reject or fail to reject (FTR) H0
+Conclusion: There is sufficient evidence at the α = .05 level of significance to suggest that the data are linearly correlated (p-value = .0028).
+
+
+#Based on the following analysis I think that there is a positive correlation between ABV and IBU. As ABV or IBU increase
+
+Liner Correlation coefficient: r (the sample linear correlation coefficient) estimates ρ (the population linear correlation coefficient) ** r estimates ρ
+
+Interpreting r:
+r^2 - The value is the proporation of the variation in y that is explained by the linear relationship between x and y
+
+10.  Provide a confidence interval for each slope (from each state).  Provide a sentence that interprets each slope (for each state) but this time include the confidence interval in your interpretation.  See the Unit 9 6371 slides for an example of how to write the interpretation of the confidence interval.  If you are not in 6371 and have not had it, ask a friend in the class to see the slides and discuss how to move forward.  In short, the confidence interval contains the plausible values of the parameter (the slope in this case) given the data you observed.  Given this new information, answer this question:  Is there significant evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers? This question is less subjective now and has a clear answer based on the plausible values for the parameters.
+E. Compare two competing models: External Cross Validation
+
+
+
+
+11.  Using the beerCOTX dataframe, add a column to the data that is the square of the IBU column.  Call it IBU2.  Print the head of the dataframe with the new column.  
+```{r}
+beerCOTX$IBU2 <- beerCOTX$IBU
+beerCOTX %>% as_tibble() %>% mutate(
+  IBU2 = IBU*IBU #Square of IBU
+)
+head(beerCOTX, 10)
+
+```
+
+12. For each state, create a training and test set from the data (60%/40% split respectively).  Print a summary of each new data frame… there should be four: TrainingCO, TestCO, TrainingTX, TestTX.  
+
+13.  Brewmeisters are curious if the relationship between ABV and IBU is purely linear or if there is evidence of a quadratic component as well.  To test this we would like to compare two models:
+Model 1:  ABV= β_0+β_1 IBU
+Model 2:ABV= β_0+β_1 IBU+β_2 〖IBU〗^2
+Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.  
+ASE=  (∑▒(y ̃_i-y_i )^2 )/n  
+Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.   
+BONUS: Is there another method that you know of that will provide inference as to the significance of the squared IBU term?  Please describe your thoughts and provide relevant statistics.  Does this inference agree with the result of your cross validation?  
+Reminder 
+To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. 
+Good luck!
+##Cross Validation Linear regression model: y = 1.1 - 1.2*x_1 + 4*x_2
+# We will randomly split the data into a training set (70%) and test set (30%)
+# We will fit the model on the training set and assess its performance by how well it recovers the y's in the test set.
+# The loss function will be the MSE .. mean square error
+
+# At the end we will make a plot of the the MSE v. Beer Data for 3 different models.  
+
+```{r}
+TrainingCO = c()
+TestCO = c()
+TrainingTX = c()
+TestTX = c()
+
+COsample <- 146
+TXsample <- 89
+
+TX_x1 = rnorm(TXsample,2,1)
+TX_x2 = rgamma(TXsample,1,2)
+
+CO_x1 = rnorm(COsample,2,1)
+CO_x2 = rgamma(COsample,1,2)
+
+#parameter setting ... these are the actual parameters that you would not know in a real world setting
+true_beta_0 = 1.1
+true_beta_1 = -1.2
+true_beta_2 = 4
+
+# error ~ N(0,2)  therefore Var(error) = 4
+TX_true_error = rnorm(TXsample,0,5)
+CO_true_error = rnorm(COsample,0,5) 
+
+#Generate Repsonses
+TX_y1 = true_beta_0 + true_beta_1*TX_x1 + true_beta_2*TX_x2 + TX_true_error
+CO_y1 = true_beta_0 + true_beta_1*CO_x1 + true_beta_2*CO_x2 + CO_true_error
+
+# Make a dataframe to fit the model
+TX_df1 = data.frame(TX_x1 = TX_x1, TX_x2 = TX_x2, TX_y1 = TX_y1)
+CO_df1 = data.frame(CO_x1 = CO_x1, CO_x2 = CO_x2, CO_y1 = CO_y1)
+
+#Divide into training and test set ... this one is 60% training 40% test
+train_perc = .6
+TX_train_indices = sample(seq(1,TXsample,length = TXsample),train_perc*TXsample)
+TrainingTX = TX_df1[TX_train_indices,]
+TestTX = TX_df1[-TX_train_indices,]
+
+CO_train_indices = sample(seq(1,COsample,length = COsample),train_perc*COsample)
+TrainingCO = TX_df1[CO_train_indices,]
+TestCO = CO_df1[-CO_train_indices,]
+
+#Fit the correct model Model 1:  ABV= β_0+β_1 IBU
+fitTrainingTX = lm(TX_y1~TX_x1 + TX_x2, data = TrainingTX)
+fitTrainingCO = lm(CO_y1~CO_x1 + CO_x2, data = TrainingCO)
+# These are the predictions of the model on the data that were used to fit the model.
+predsTrainingTX = predict(fitTrainingTX)
+predsTrainingCO = predict(fitTrainingCO)
+# These are the predictions of the model on the data that were NOT used to fit the model.
+# This is a better measure of how the model will perform in real life
+predsTestTX = predict(fitTrainingTX, newdata = TestTX)
+predsTestCO = predict(fitTrainingCO, newdata = TestCO)
+
+summary(fitTrainingTX)
+summary(fitTrainingCO)
+
+# Calculation of the MSE for the training set
+TrainingTX = sum((predsTrainingTX - TrainingTX$TX_y1)^2)/(length(TrainingTX$TX_y1) - 2)
+# Calculation of the MSE for the Test set
+TestTX = sum((predsTestTX - TestTX$TX_y1)^2)/(length(TestTX$TX_y1) - 2)
+# Calculation of the MSE for the training set
+TrainingCO = sum((predsTrainingCO - TrainingCO$CO_y1)^2)/(length(TrainingCO$CO_y1) - 2)
+# Calculation of the MSE for the Test set
+TestCO = sum((predsTestCO - TestCO$CO_y1)^2)/(length(TestCO$CO_y1) - 2)
+
+#Fit the wrong model
+#fitTrainingCO = lm(TX_y1~TX_x1, data = TrainingTX)
+# These are the predictions of the model on the data that were used to fit the model.
+#predsTrainingCO = predict(fitTrainingCO)
+# These are the predictions of the model on the data that were NOT used to fit the model.
+# This is a better measure of how the model will perform in real life
+#predsTestCO = predict(fitTrainingCO, newdata = TestTX)
+
+#Fit the wrong model Model 2:ABV= β_0+β_1 IBU+β_2 〖IBU〗^2
+fitTrainingTX = lm(CO_y1~CO_x1, data = TrainingCO)
+# These are the predictions of the model on the data that were used to fit the model.
+predsTrainingTX = predict(fitTrainingCO)
+# These are the predictions of the model on the data that were NOT used to fit the model.
+# This is a better measure of how the model will perform in real life
+#predsTestTX = predict(fitTrainingTX, newdata = TestCO)
+
+
+# Calculation of the MSE for the training set
+TrainingCO = sum((predsTrainingCO - TX_y1)^2)/(length(TX_y1) - 2)
+# Calculation of the MSE for the Test set
+TestCO = sum((predsTestCO - TX_y1)^2)/(length(TX_y1) - 2)
+
+# Calculation of the MSE for the training set
+TrainingTX = sum((predsTrainingCO - CO_y1)^2)/(length(CO_y1) - 2)
+# Calculation of the MSE for the Test set
+TestTX = sum((predsTestTX - CO_y1)^2)/(length(CO_y1) - 2)
+
+TrainingTX
+TestTX
+
+TrainingCO
+TestTX
+
+summary(fitTrainingTX)
+summary(fitTrainingCO)
+
+
+
+```

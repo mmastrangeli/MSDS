@@ -1,6 +1,6 @@
 ---
-title: "CaseStudy01RMD_MarkSolange"
-author: "Mark Mastrangeli & Solange"
+title: "CaseStudy01RMD"
+author: "Mark Mastrangeli"
 date: "10/7/2018"
 output: html_document
 ---
@@ -43,7 +43,8 @@ tail(Breweries_Beers, 6)
 3.	Report the number of NA's in each column.
 ```{r , echo=TRUE}
 colSums(is.na(Breweries_Beers))
-#Can we display this somehow? 
+#Can we display this somehow?
+
 ```
 
 4.	Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
@@ -98,8 +99,5 @@ IBU_State
 ```
 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
