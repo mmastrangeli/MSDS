@@ -1,0 +1,356 @@
+---
+title: "UNIT 10 HW"
+author: "Mark Mastrangeli"
+date: "11/12/2018"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+breweries = read.csv("breweries.csv",header = TRUE)
+beer = read.csv("beers.csv",header = TRUE)
+```
+
+#A. Clean an prepare the data:
+###1. Create column for brewery ID that is common to both datasets similar to what you did in the project. So we can merge!
+###2. Merge the beer and brewery data into a single dataframe.
+###3. Clean the State Column … get rid of extraneous white space.  
+###4. Create One Dataset that has only Colorado and Texas beers and no IBU NAs … name it “beerCOTX”
+###5. Order beerCOTX by IBU (ascending) ... this will be important later in graphing
+
+```{r }
+
+# Create column for brewery ID that is common to both DFs so we can merge.
+breweries = breweries %>% mutate(Brewery_id = Brew_ID)
+# Merge beer and brewery data.
+beerDF = merge(beer,breweries,"Brewery_id")
+# Clean the State Column
+beerDF = beerDF %>% mutate(State = as.factor(trimws(State)))
+colnames(beerDF) <- c("Brewery_ID", "Beer_Name", "Beer_ID", "ABV", "IBU", "Style", "Ounces", "Brew_ID", "Brewery_Name", "City", "State")
+
+#Create One Dataset that has both Colorado and Texas and no IBU NAs.
+beerCOTX = beerDF %>% filter(!is.na(IBU)) %>% filter(State == "CO" | State == "TX")
+#plot  ABV v. IBU for both Colorado and Texas
+
+
+```
+
+
+### 6. Plot ABV v. IBU for both Colorado and Texas (two separate plots) … use ggplot and facets. 
+
+```{r}
+beerCOTX %>% ggplot(aes(x = IBU, y = ABV)) + facet_wrap(~State) + geom_point() + labs(title = "ABV v. IBU for Colorado")
+#Order beerCOTX by IBU ... this will be important later in graphing
+beerCOTX = beerCOTX[order(beerCOTX$IBU),]
+beerCOTX$IBU2 = beerCOTX$IBU^2
+head(beerCOTX)
+```
+
+###7. For each state, fit a simple linear regression model (Model 1:  ABV= β_0+β_1 IBU) to assess the relationship between ABV and IBU. Use the regular plot function in base R (not ggplot) to create a scatter plot with the regression line superimposed on the plot.  Again, this should be done for each state.  
+
+```{r}
+# Fit a linear regression model to the data from each state
+fitCO = lm(ABV~IBU,data = filter(beerCOTX,State == "CO"))
+summary(fitCO)
+fitTX = lm(ABV~IBU,data = filter(beerCOTX,State == "TX"))
+summary(fitTX)
+```
+
+###8.  Address the assumptions of the regression model.  You may assume the data are independent (even if this is a stretch.):  1. There is a normal distribution of the ABV for fixed values of IBU.  2. These normal distributions have equal standard deviations.  3. The means of these normal distributions have a linear relationship with IBU.  4. Independence ( you may assume this one to be true without defense.)
+
+#### There is not significant evidence agianst the assumption ABV is norally disriuted for each subpopulation of IBU.
+#### This not signficant evidence against the assumption that the means of the assumed normal distributions of AVB given the IBU are linearly related to the value of IBU.
+#### There is not significant evidence against the assumption that the normal distributions of ABV given IBU have the same standard deviations.  
+#### We are assuming that the observations are independent.  
+
+###9. Make sure and print the parameter estimate table.  Interpret the slope of the regression model.  You should have one sentence for each interpretation.  In addition, answer the question: Is there evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers?  For now, this is a judgement call.
+
+```{r}
+# Fit a linear regression model to the data from each state
+fitCO = lm(ABV~IBU,data = filter(beerCOTX,State == "CO"))
+summary(fitCO)
+COcoefs <- coef(fitCO)
+COsigma <- sigma(fitCO)
+fitCO_r2 <- COcoefs[1]
+fitTX = lm(ABV~IBU,data = filter(beerCOTX,State == "TX"))
+summary(fitTX)
+TXcoefs <- coef(fitTX)
+TXsigma <- sigma(fitTX)
+fitTX_r2 <- TXcoefs[1]
+#use each regression line to predict the ABV for the given IBUs.  
+predsCO = predict(fitCO)
+predsTX = predict(fitTX)
+#for each state / regression line provide a scatter plot with a regerssion line (do not use ggplot2 here)
+par(mfrow = c(1,2))
+
+
+
+plot(filter(beerCOTX,State == "CO")$IBU,filter(beerCOTX,State == "CO")$ABV, pch = 20, col = "blue", xlab = "International Bitterness Units", ylab = "Alcohol By Volume", main = "ABV v. IBU of Colorado Beers")
+lines(filter(beerCOTX,State == "CO")$IBU,predsCO)
+
+
+
+plot(filter(beerCOTX,State == "TX")$IBU,filter(beerCOTX,State == "TX")$ABV, pch = 20, col = "blue", xlab = "International Bitterness Units", ylab = "Alcohol By Volume", main = "ABV v. IBU of Texas Beers")
+lines(filter(beerCOTX,State == "TX")$IBU,predsTX)
+
+```
+
+####Colorado: For every additional unit of IBU the esitmated mean ABV increases .000367 units.  
+####Texas: For every additional unit of IBU the esitmated mean ABV increases .000417 units.
+#### While the sample slopes are different, I don't believe they are far enough apart to suggest that this is not just because of smapleing error.  (This is an opinion not backed by any objective test at this point. Any clear and thorough answer will do.)
+
+
+###10. Provide a confidence interval for each slope (from each state).  Provide a sentence that interprets each slope (for each state) but this time include the confidence interval in your interpretation.  See the Unit 9 6371 slides for an example of how to write the interpretation of the confidence interval.  If you are not in 6371 and have not had it, ask a friend in the class to see the slides and discuss how to move forward.  In short, the confidence interval contains the plausible values of the parameter (the slope in this case) given the data you observed.  Given this new information, answer this question:  Is there significant evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers? This question is less subjective now and has a clear answer based on the plausible values for the parameters.
+
+```{r}
+confint(fitCO)
+confint(fitTX)
+```
+
+
+####Remember that the confidence interval contains the plausible values for the slope given each state's data.  Since the confidence itnervals overlap, it is plausible that they may be the same.  There is not enough evidence to suggest that the relationship (slope) between ABV and IBU is different for Colorado and Texas.  
+
+
+###11.  Using the beerCOTX dataframe, add a column to the data that is the square of the IBU column.  Call it IBU2.  Print the head of the dataframe with the new column.  
+
+
+```{r}
+#fit the first model to the training set
+beerCOTX$IBU2 = beerCOTX$IBU^2
+head(beerCOTX)
+```
+
+###12. For each state, create a training and test set from the data (60%/40% split respectively).  Print a summary of each new data frame… there should be four: TrainingCO, TestCO, TrainingTX, TestTX.  
+
+```{r}
+
+#random training set and test set for CO Data
+beerCO = filter(beerCOTX,State == "CO")
+dim(beerCO) # 146
+beerCO$rand_number = runif(146,0,1)
+trainCO = beerCO[beerCO$rand_number < .6,]
+testCO = beerCO[beerCO$rand_number > .6,]
+size_testCO = dim(testCO)[1]
+
+
+#random training set and test set for TX Data
+beerTX = filter(beerCOTX,State == "TX")
+dim(beerTX) # 89 
+beerTX$rand_number = runif(89,0,1)
+trainTX = beerTX[beerTX$rand_number < .6,]
+testTX = beerTX[beerTX$rand_number > .6,]
+size_testTX = dim(testTX)[1]
+```
+
+
+### 13. Brewmeisters are curious if the relationship between ABV and IBU is purely linear or if there is evidence of a quadratic component as well.  To test this we would like to compare two models:
+###Model 1:  ABV= β_0+β_1 IBU
+###Model 2: ABV= β_0+β_1 IBU+β_2 〖IBU〗^2
+###Use the ASE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the ASEs, as to which model you feel is more appropriate. 
+
+
+```{r}
+#COLORADO
+#fit the first model to the training set
+fit1CO = lm(ABV~IBU, data = trainCO)
+#get predictions for the test data from the model fit on the training data
+predsCO = predict(fit1CO,newdata = data.frame(IBU = testCO$IBU))
+#Calculate the RMSE loss function
+RMSE1CO = sqrt(sum((testCO$ABV - predsCO)^2)/size_testCO)  #62 is the size of the test set.
+RMSE1CO
+
+#fit the second (deg 2) model to the training set
+fit2CO = lm(ABV~IBU + IBU2, data = trainCO)
+#get predictions for the test data from the model fit on the training data
+predsCO = predict(fit2CO,newdata = data.frame(IBU = testCO$IBU, IBU2 = testCO$IBU2))
+#Calculate the RMSE loss function
+RMSE2CO = sqrt(sum((testCO$ABV - predsCO)^2)/size_testCO) #62 is the size of the test set.
+RMSE2CO
+
+#TEXAS
+#fit the first model to the training set
+fit1TX = lm(ABV~IBU, data = trainTX)
+#get predictions for the test data from the model fit on the training data
+predsTX = predict(fit1TX,newdata = data.frame(IBU = testTX$IBU))
+#Calculate the RMSE loss function
+RMSE1TX = sqrt(sum((testTX$ABV - predsTX)^2)/size_testTX) # 34 is the size of the test set.
+RMSE1TX
+
+#fit the second (deg 2) model to the training set
+fit2TX = lm(ABV~IBU + IBU2, data = trainTX)
+#get predictions for the test data from the model fit on the training data
+predsTX = predict(fit2TX,newdata = data.frame(IBU = testTX$IBU, IBU2 = testTX$IBU2))
+#Calculate the RMSE loss function
+RMSE2TX = sqrt(sum((testTX$ABV - predsTX)^2)/size_testTX) # 34 is the size of the test set.
+RMSE2TX
+```
+
+####Answer: While for some runs the RMSE of the test set for each state may be slighly smaller, it is likely to be close to that of the training set and will be greater about and frequently as it is less.  The point is, for both states, that using IBU2 does not help in predicting the the ABV (in an RMSE sense) above and beyond just using IBU alone.  This is because there it little evidence that the relationship between ABV and IBU is anything more than linear.    
+
+####BONUS: Look at the parameter estimate table for the degree 2 model (model 2) for each state.  The pvalue for IBU2 is much greater than .05 indicating that there is not sufficient evidence to suggest that there is a quadratic component (IBU^2) in the relationship between ABV and IBU.  
+
+
+
+### EXTRAS for more information on calculating and ploting confidence and prediction intervals ... this uses the aggregated CO and TX data.  
+
+```{r}
+#calculate the confidence intervals for the mean and prediction interals for the next observation 
+predsCO_CI = predict(fitCO,interval = "confidence")
+predsCO_PI = predict(fitCO,interval = "predict")
+predsTX_CI = predict(fitTX,interval = "confidence")
+predsTX_PI = predict(fitTX,interval = "predict")
+#add the confidence intervals for the mean (blue) and predition intervals for the next observation the plots.
+par(mfrow = c(1,2))
+plot(filter(beerCOTX,State == "CO")$IBU,filter(beerCOTX,State == "CO")$ABV)
+lines(filter(beerCOTX,State == "CO")$IBU,predsCO_CI[,1], lwd = 5)
+lines(filter(beerCOTX,State == "CO")$IBU,predsCO_CI[,2], col = "blue")
+lines(filter(beerCOTX,State == "CO")$IBU,predsCO_CI[,3], col = "blue")
+lines(filter(beerCOTX,State == "CO")$IBU,predsCO_PI[,2], col = "green")
+lines(filter(beerCOTX,State == "CO")$IBU,predsCO_PI[,3], col = "green")
+
+plot(filter(beerCOTX,State == "TX")$IBU,filter(beerCOTX,State == "TX")$ABV)
+lines(filter(beerCOTX,State == "TX")$IBU,predsTX_CI[,1], lwd = 5)
+lines(filter(beerCOTX,State == "TX")$IBU,predsTX_CI[,2], col = "blue")
+lines(filter(beerCOTX,State == "TX")$IBU,predsTX_CI[,3], col = "blue")
+lines(filter(beerCOTX,State == "TX")$IBU,predsTX_PI[,2], col = "green")
+lines(filter(beerCOTX,State == "TX")$IBU,predsTX_PI[,3], col = "green")
+
+#calcluate the prediction interval for the IBU = 64
+newIBU = data.frame(IBU = 64)
+predict(fitCO,interval = "prediction", newdata = newIBU)
+predict(fitTX,interval = "prediction", newdata = newIBU)
+```
+
+
+#Unit 10 & 11 HW 
+
+   
+
+11.  Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the “best” KNN regression model from this week (from question 10)) is more appropriate. 
+
+12.  Use your “best” KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?    
+
+
+
+
+BONUS (5 pts total): We did not have a lot data to build and test this classifier.  Check out the class package’s knn.cv function that will perform leave-one-out cross validation.  
+
+What is leave-one-out CV (2pts)?  
+
+Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  
+
+Which model is suggested by the leave-one-out CV method (1pt)?  
+
+```{r}
+
+attach(beerTX)
+library(mlr)
+summarizeColumns(beerTX)
+library(caret)
+#B. Compare two competing models: External Cross Validation
+##8. For this assignment we will concentrate only on the Texas data!  Create a training and test set from the data (60%/40% split respectively).  Print a summary of each new data frame… there should be two: TrainingTX, TestTX.
+
+set.seed(7) # Set Seed so that same sample can be reproduced in future also
+# considering response variable as strata
+#random training set and test set for CO Data
+
+#random training set and test set for TX Data
+beerTX = filter(beerCOTX,State == "TX")
+data_part <- createDataPartition(y = beerTX$ABV,  p = 0.60, list = F)
+dim(beerTX) # 89 
+trainTX = beerTX[data_part,]
+testTX = beerTX[-data_part,]
+size_testTX = dim(testTX)[1]
+
+fitTX = lm(ABV~IBU,data = filter(beerCOTX,State == "TX"))
+
+ltrainTX = length(trainTX$ABV)
+ltestTX = length(testTX$ABV)
+
+perc_test = ltestTX / (ltestTX + ltrainTX)
+perc_train = ltrainTX / (ltestTX + ltrainTX)
+perc_test
+perc_train
+
+```
+
+```{r}
+
+##9.Using the training dat, fit a KNN regression model to predict ABV from IBU.  You should use the knnreg function in the caret package.  Fit two separate models: one with k = 3 and one with k = 5.  (This is 2 models total.)
+
+plot(trainTX$ABV, trainTX$IBU, main = "TX Beer KNN ABV from IBU", xlim = c(0,.1))
+text(trainTX$ABV, trainTX$IBU, labels = trainTX$ABV, pos = 4, col = "blue")
+points(testTX$ABV, testTX$IBU,col = "red", pch = 15)
+fit =  knnreg(x = trainTX[,c(1,1)], y = trainTX$IBU, k = 3)
+predict(fitTX,testTX[,c(1,1)])
+
+plot(trainTX$ABV, trainTX$IBU, main = "TX Beer KNN ABV from IBU", xlim = c(0,.1))
+text(trainTX$ABV, trainTX$IBU, labels = trainTX$ABV, pos = 4, col = "blue")
+points(testTX$ABV, testTX$IBU,col = "red", pch = 15)
+fit =  knnreg(x = trainTX[,c(1,1)], y = trainTX$IBU, k = 5)
+predict(fitTX,testTX[,c(1,1)])
+
+
+#summarize train and test dataset by columns 
+head(trainTX)
+head(testTX)
+
+summarizeColumns(trainTX)
+summarizeColumns(testTX)
+
+#description of train and test data
+trainTask <- makeClassifTask(data = trainTX, target = "Style")
+testTask <- makeClassifTask(data = testTX, target = "Style")
+
+trainTask
+
+str(getTaskData(trainTask))
+
+```
+
+```{r}
+
+##10.  Use the ASE loss function and external cross validation to provide evidence as to which model (k = 3 or k = 5) is more appropriate.  Remember your answer should be supported with why you feel a certain model is appropriate.  Your analysis should include the average squared error (ASE) for each model from the test set.  Your analysis should also include a clear discussion, using the ASEs, as to which model you feel is more appropriate.  
+###ASE=  (∑▒(y ̃_i-y_i )^2 )/n  
+###Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.
+##11.  Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the “best” KNN regression model from this week (from question 10)) is more appropriate. 
+
+##12.  Use your “best” KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?   
+#TEXAS
+#fit the first model to the training set
+fit1TX = lm(ABV~IBU, data = trainTX)
+#get predictions for the test data from the model fit on the training data
+predsTX = predict(fit1TX,newdata = data.frame(IBU = testTX$IBU))
+#Calculate the RMSE loss function
+RMSE1TX = sqrt(sum((testTX$ABV - predsTX)^2)/size_testTX) # 34 is the size of the test set.
+RMSE1TX
+
+#fit the second (deg 2) model to the training set
+fit2TX = lm(ABV~IBU + IBU2, data = trainTX)
+#get predictions for the test data from the model fit on the training data
+predsTX = predict(fit2TX,newdata = data.frame(IBU = testTX$IBU, IBU2 = testTX$IBU2))
+#Calculate the RMSE loss function
+RMSE2TX = sqrt(sum((testTX$ABV - predsTX)^2)/size_testTX) # 34 is the size of the test set.
+RMSE2TX
+
+```
+
+
+BONUS (5 pts total): We did not have a lot data to build and test this classifier.  Check out the class package’s knn.cv function that will perform leave-one-out cross validation.  
+
+What is leave-one-out CV (2pts)?  
+### Leave On Out CV or LOOCV is used when the test set contains a single observation. 
+### From https://www.r-bloggers.com/cross-validation-for-predictive-analytics-using-r/
+### The advantages of LOOCV are: 1) it doesn’t require random numbers to select the observations to test, meaning that it doesn’t produce different results when applied repeatedly, and 2) it has far less bias than k">kk-fold CV because it employs larger training sets containing n−1">n−1n−1 observations each. On the other side, LOOCV presents also some drawbacks: 1) it is potentially quite intense computationally, and 2) due to the fact that any two training sets share n−2">n−2n−2 points, the models fit to those training sets tend to be strongly correlated with each other.
+
+Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  
+
+Which model is suggested by the leave-one-out CV method (1pt)? 

@@ -13,6 +13,7 @@ library(knitr)
 setwd("~/SMU/MSDS/github/MSDS/Unit09HW")
 ```
 
+##For this r
 Questions
 
 Background: Brewmeisters in Colorado and Texas have teamed up to analyze the relationship between ABV and IBU in each of their states.  Use the data sets from the project to help them in their analysis.  There three main questions of interest are 1) Is there a significant linear relationship between ABV (response) and IBU (explanatory), 2) Is this relationship different between beers in Colorado and Texas and 3) Is there a significant quadratic component in this relationship for either Colorado or Texas or both?  
