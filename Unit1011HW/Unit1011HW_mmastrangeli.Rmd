@@ -354,3 +354,161 @@ What is leave-one-out CV (2pts)?
 Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  
 
 Which model is suggested by the leave-one-out CV method (1pt)? 
+
+
+
+Unit 11 Questions
+1. Use the most updated code that is zipped with this.  It fixes the grep problem by pasting a string with bracketed regular expression.   I think someone mentioned this in class.  Good call!
+2. Use the “snippet” instead of the headline.
+3. Look at data from 1989 to 1999
+4. To provide external cross validation (50%-50%).  Create a training and test set from the total number of articles.  Train the classifier on the training set and create your confusion matrix from the test set. Make sure and provide the confusion matrix.
+6. Provide accuracy, sensitivity and specificity from the confusion matrix.  You may consider News to be the positive.
+7. Use you statistics from the last two questions to assess whether the headline or the snippet makes for a better classifier.  
+Reminder 
+To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. 
+Good luck!
+```{r}
+library(dplyr)
+library(tidyr)
+library(plyr)
+library(rjson)
+library(RTextTools)
+library(jsonlite)
+
+#1dd4756fa8394d538b5db5ecb658cf0b
+#694d122959ab40c9b1abf9b136d2f058
+NYTIMES_KEY = "694d122959ab40c9b1abf9b136d2f058";
+
+# Let's set some parameters
+term <- "central+park+jogger" # Need to use + to string together separate words
+begin_date <- "19890419"
+end_date <- "19990901"
+
+baseurl <- paste0("http://api.nytimes.com/svc/search/v2/articlesearch.json?q=",term,
+                  "&begin_date=",begin_date,"&end_date=",end_date,
+                  "&facet_filter=true&api-key=",NYTIMES_KEY, sep="")
+
+initialQuery <- jsonlite::fromJSON(baseurl)
+maxPages <- round((initialQuery$response$meta$hits[1] / 10)-1)
+
+
+for(i in 1:100000000)
+{  
+  j = (i + 1 -1 )/i 
+}
+
+pages <- list()
+for(i in 0:maxPages){
+  nytSearch <- jsonlite::fromJSON(paste0(baseurl, "&page=", i), flatten = TRUE) %>% data.frame() 
+  message("Retrieving page ", i)
+  pages[[i+1]] <- nytSearch 
+  Sys.sleep(1) 
+}
+
+
+allNYTSearch <- rbind_pages(pages)
+
+
+#Make another column of News versus Other ... The labels
+
+allNYTSearch$NewsOrOther = ifelse(allNYTSearch$response.docs.type_of_material == "News","News","Other")
+
+
+allNYTSearch$Classified = c()
+
+#This function .... 
+Pnews_word = function(key_word = "jogging", trainingSet)
+{
+  #print(key_word)
+  NewsGroup = trainingSet[trainingSet$NewsOrOther == "News",]
+  OtherGroup = trainingSet[trainingSet$NewsOrOther == "Other",]
+  
+  pNews = dim(NewsGroup)[1] / (dim(NewsGroup)[1] + dim(OtherGroup)[1])
+  pOther = 1 - pNews
+  
+  # Stopping point One For Live Session
+  #pKWGivenNews = length(grep(key_word,NewsGroup$response.docs.snippet,ignore.case = TRUE))/dim(NewsGroup)[1]
+  #pKWGivenOther = length(grep(paste(key_word,OtherGroup$response.docs.snippet,ignore.case = TRUE))/dim(OtherGroup)[1]
+  
+  #pKWGivenNews = length(grep(paste("\\b",key_word,"\\b",sep=""),NewsGroup$response.docs.snippet,ignore.case = TRUE))/dim(NewsGroup)[1]
+  #pKWGivenOther = length(grep(paste("\\b",key_word,"\\b",sep=""),OtherGroup$response.docs.snippet,ignore.case = TRUE))/dim(OtherGroup)[1]
+  
+  pKWGivenNews = length(grep(paste("\\b",key_word,"\\b",sep=""),gsub("[^[:alnum:] ]", "", NewsGroup$response.docs.snippet),ignore.case = TRUE))/dim(NewsGroup)[1]
+  pKWGivenOther = length(grep(paste("\\b",key_word,"\\b",sep=""),gsub("[^[:alnum:] ]", "", OtherGroup$response.docs.snippet),ignore.case = TRUE))/dim(OtherGroup)[1]
+  
+  pKW = length(grep(paste("\\b",key_word,"\\b",sep=""),gsub("[^[:alnum:] ]", "", trainingSet$response.docs.snippet),ignore.case = TRUE))/dim(trainingSet)[1]
+  
+  pNewsGivenKW = 0
+  pOtherGivenKW = 0
+  
+  #print(pOther)
+  #print(pKWGivenNews)
+  #print(pKWGivenOther)
+  #print(pKW)
+
+  # Don't want to divide by 0 if the keyword doesn't come up in any snippets ... but how is that possible?  Shouldn't it be in at 
+  # at least the snippet that we are trying to classfiy?  Answer... not if we take the special characters out of the 
+  # word but not out of the snippets we are seraching through.  Example snippet 8: "City's"
+  # Also... what happens when we have a training and test set?  The word from the test set is not guaranteed to come up in the 
+  # training snippets.  
+  #Finally Nan + 8 = NaN... if one word is not found in the trianing then an Nan will be produced if not "caught" here.  
+  if(pKW != 0)
+  {
+  pNewsGivenKW = pKWGivenNews*pNews/pKW
+  pOtherGivenKW = pKWGivenOther*pOther/pKW
+  }
+
+  
+  #print(pOtherGivenKW)
+  return(pNewsGivenKW)
+}
+
+
+# Split into Training and Test
+#Big loop with Test but send Training to get conditional probabililties
+
+allNYTSearch$rand = runif(dim(allNYTSearch)[1],0,1)
+train = allNYTSearch[allNYTSearch$rand < .5,]
+test = allNYTSearch[allNYTSearch$rand > .5,]
+
+# Initialize the arrays to hold the classified labels
+#These cannot be definied in the loop or they will only exist in the loop.  
+theScoreHolderNews= c()
+theScoreHolderOther = c()
+#Initialize the score variables.
+#Again, these cannot be definied in the loop or they will only exist in the loop. 
+articleScoreNews = 0;
+articleScoreOther = 0;
+
+#dim(allNYTSearch)[1]
+for (i in 1 : dim(test)[1])  #This loop interates over all test articles
+{
+  print(paste("Percent complete: ", round(i/dim(test)[1] * 100, digits = 2), "%"))
+  articleScoreNews = 0; 
+  articleScoreOther = 0;
+  #strsplit(gsub("[^[:alnum:] ]", "", str), " +")
+  #strsplit(allNYTSearch$response.docs.snippet[i],split = " ")
+  theText = unlist(strsplit(gsub("[^[:alnum:] ]", "", test$response.docs.snippet[i]), " +")) #each word in test snippet for an article
+  if(length(theText>0))
+     {
+  for(j in 1 : length(theText))  #This loop iterates over ... 
+  {
+   
+    articleScoreNews = articleScoreNews + Pnews_word(theText[j],train)  #send the training to get probablities.
+    articleScoreOther = articleScoreOther + (1 - Pnews_word(theText[j],train))  #send the training to get probablities.
+  
+  }
+  }
+  theScoreHolderNews[i] = articleScoreNews
+  theScoreHolderOther[i] = articleScoreOther
+}
+
+# Classify the test aricles as News or Other based on the snippet score.
+
+test$Classified = ifelse(theScoreHolderNews > theScoreHolderOther,"News","Other")
+
+
+#Confusion Matrix
+confusionMatrix(table(test$NewsOrOther,test$Classified)) # This will produce the Sensitivity, Specificity and Accuracy.
+
+```

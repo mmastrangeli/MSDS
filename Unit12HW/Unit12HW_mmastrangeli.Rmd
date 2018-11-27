@@ -1,0 +1,185 @@
+---
+title: "Unit12HW_mmastrangeli"
+author: "Mark Mastrangeli"
+date: "11/26/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(fpp)
+
+library(xts)
+library(BBmisc)
+```
+
+## R Markdown
+
+#Warm Up: Brief Financial Data (20%)
+##a.	Natively in R, you have access to sample data sets of prominent stocks over time.  We’ll be using EuStockMarkets for this question.  Type help(EuStockMarkets) to learn more.  From these data, pull specifically the DAX index.  For all questions in this assignment, you’re welcome to normalize (or don’t!) how you see fit, but, if you choose to, please document what you’re doing and why for the grader.  It’s not necessary for the purpose of this assignment.
+##b.	These are annual European Stock Data from 1990 onward.  Create a rudimentary plot of the data.  Make the line blue.  Give an informative title.  Label the axes accurately.  In 1997, an event happened you want to indicate; add a vertical red line to your plot which divides pre-1997 and post-1997 information.
+##c.	Decompose the time series into its components (i.e., trend, seasonality, random).  Keep in mind that this is a multiplicative model you want.  Create a plot of all decomposed components.  As before, make all lines blue and have a vertical divider at the year 1997.
+```{r}
+help(EuStockMarkets)
+str(EuStockMarkets)
+head(EuStockMarkets)
+
+#Pull the DAX data from sample data set and store in daxdf. 
+##Note we do not need to subset the data given it starts at 1991
+daxdf <- EuStockMarkets[,1]
+head(daxdf)
+str(daxdf)
+
+
+#Normalize the data or don't, explain why!
+#Given the data is financial data, what is really important is the difference from day to day.  Taking the log of the data and then determining the difference from previous day
+
+daxdfNorm <- diff(log(daxdf), lag = 1, differences = 1)
+plot.ts(cbind(daxdf, daxdfNorm))
+daxdfNorm_decomp <- decompose(daxdfNorm, "multiplicative")
+
+##b.	These are annual European Stock Data from 1990 onward.  Create a rudimentary plot of the data.  Make the line blue.  Give an informative title.  Label the axes accurately.  In 1997, an event happened you want to indicate; add a vertical red line to your plot which divides pre-1997 and post-1997 information.
+plot.ts(daxdf, xlab = "Date", ylab = "Daily Closing Value", main = "Germany DAX (Ibis)", col= "blue", xlim = c(1991,1999))
+abline(v = 1997, col = 'red')
+
+
+##c.	Decompose the time series into its components (i.e., trend, seasonality, random).  Keep in mind that this is a multiplicative model you want.  Create a plot of all decomposed components.  As before, make all lines blue and have a vertical divider at the year 1997.
+daxdf_decomp <- decompose(daxdf, "multiplicative")
+
+
+
+plot(daxdf_decomp$trend, xlab = "Date", ylab = "Daily Closing Value", main = "Germany DAX (Ibis) Trend", col= "blue", xlim = c(1991,1999))
+abline(v = 1997, col = 'red')
+plot(daxdf_decomp$seasonal, xlab = "Date", ylab = "Daily Closing Value", main = "Germany DAX (Ibis) Seasonality", col= "blue", xlim = c(1991,1999))
+abline(v = 1997, col = 'red')
+plot(daxdf_decomp$random, xlab = "Date", ylab = "Daily Closing Value", main = "Germany DAX (Ibis) Random", col= "blue", xlim = c(1991,1999))
+abline(v = 1997, col = 'red')
+
+#Plot the Decomposition of the original data
+plot (daxdf_decomp,col = "blue") 
+stlRes <- stl(daxdf, s.window = "periodic")
+abline(v = 1997, col = "red")
+
+#Plot the Decomposition of the normalized data
+plot (daxdfNorm_decomp,col = RColorBrewer::brewer.pal(3, "Accent")) 
+stlRes <- stl(daxdfNorm, s.window = "periodic")
+abline(v = 1997, col = RColorBrewer::brewer.pal(3, "Reds"))
+```
+
+
+#2.	Temperature Data (40%)
+##a.	Using the maxtemp dataset granted by loading fpp2, there are maximum annual temperature data in Celsius.  For more information, use help(maxtemp).  To see what you’re looking at, execute the command in ‘Examples’ in the help document.
+##b.	We are only concerned with information after 1990.  Please eliminate unwanted information or subset information we don’t care about.
+##c.	Utilize SES to predict the next five years of maximum temperatures in Melbourne.  Plot this information, including the prior information and the forecast.  Add the predicted value line across 1990-present as a separate line, preferably blue.  So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc and BIC of this fitted model.  You will use that information later.
+##d.	Now use a damped Holt’s linear trend to also predict out five years.  Make sure initial=“optimal.”  As above, create a similar plot to 1C, but use the Holt fit instead.
+##e.	Compare the AICc and BIC of the ses() and holt() models.  Which model is better here?
+##f.	Calculate and compare the ASE from the ses() and holt() models.  Which one performs better with respect to this metric?
+```{r}
+library(fpp2)
+##a.	Using the maxtemp dataset granted by loading fpp2, there are maximum annual temperature data in Celsius.
+
+help(maxtemp)
+data(maxtemp)
+
+##b. Subset the data to include only 1990 onward
+maxtemp1990 = window(maxtemp, start = 1990, end = 2016)
+summary(maxtemp1990)
+plot(maxtemp1990, xlab = "Date", ylab = "Temperature", main = "Maximum annual temperatures at Moorabbin Airport, Melbourne", col= "blue", xlim = c(1990,2016))
+
+##c.	Utilize SES to predict the next five years of maximum temperatures in Melbourne.  Plot this information, including the prior information and the forecast.  Add the predicted value line across 1990-present as a separate line, preferably blue.  So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc and BIC of this fitted model.  You will use that information later.
+
+fit1 = ses(maxtemp1990, h = 5, initial = "optimal")
+fit2 = holt(maxtemp1990, h = 5, initial = "optimal")
+
+plot(maxtemp1990, xlab = "Date", ylab = "Temperature", type = "o", main = "Maximum annual temperatures at Moorabbin Airport, Melbourne", col= "black", xlim = c(1990,2021))
+lines(fitted(fit1), col = "blue", type = "o")
+lines(fitted(fit2), col = "green", type = "o")
+lines(fit1$mean, col = "red", type = "o")
+lines(fit2$mean, col = "purple", type = "o")
+
+
+plot(maxtemp1990, xlab = "Date", ylab = "Temperature", type = "o", main = "Maximum annual temperatures at Moorabbin Airport, Melbourne", col= "black", xlim = c(1990,2021))
+lines(fit1$mean, col = "blue", type = "o")
+lines(fit2$mean, col = "red", type = "o")
+
+
+#SES Model AIC
+fit1$model$aic
+#Holt Model AIC
+fit2$model$aic
+#SES Model BIC
+fit1$model$bic
+#Holt Model BIC
+fit2$model$bic
+
+maxtemp_fit1_ase <- sum(fit1$residuals^2)/length(fit1$residuals)
+maxtemp_fit2_ase <- sum(fit2$residuals^2)/length(fit2$residuals)
+#SES Model ASE
+maxtemp_fit1_ase
+#Holt Model ASE
+maxtemp_fit2_ase
+
+#The Holt Model has a lower ASE and should be a better model if ASE is the measurement
+
+```
+
+#3.	The Wands Choose the Wizard (40%)
+
+```{r}
+##a.	Utilize the dygraphs library.  Read in both Unit12TimeSeries_Ollivander and _Gregorovitch.csv as two different data frames.  They do not have headers, so make sure you account for that.  This is a time series of Wands sold over years.
+library(dygraphs)
+Ollivander = read.csv("Unit12TimeSeries_Ollivander.csv")
+Gregorovitch = read.csv("Unit12TimeSeries_Gregorovitch.csv")
+
+colnames(Ollivander) <- c("Year","Units")
+colnames(Gregorovitch) <- c("Year","Units")
+
+##b.	You don’t have your information in the proper format!  In both data sets, you’ll need to first convert the date-like variable to an actual Date class.
+Ollivander$Year = as.Date(Ollivander$Year, "%m/%d/%Y")
+Gregorovitch$Year = as.Date(Gregorovitch$Year, "%m/%d/%Y")
+
+##c.	Use the library xts (and the xts() function in it) to make each data frame an xts object (effectively, a time series).  You’ll want to order.by the Date variable.
+GregorovitchXTS <- xts(Gregorovitch$Units, order.by = Gregorovitch$Year)
+OllivanderXTS <- xts(Ollivander$Units, order.by = Ollivander$Year)
+
+##d.	Bind the two xts objects together and create a dygraph from it.  Utilize the help() index if you’re stuck.
+###•	Give an effective title and x/y axes.
+###•	Label each Series (via dySeries) to be the appropriate wand-maker.  So, one line should create a label for Ollivander and the other for Gregorovitch.
+###•	Stack this graph and modify the two lines to be different colors (and not the default ones!)  Any colors are fine, but make sure they’re visible and that Ollivander is a different color than Gregorovitch.
+###•	Activate a range selector and make it big enough to view.
+###•	Use dyShading to illuminate approximately when Voldemort was revived and at-large: between 1995 to 1999.
+###•	Enable Highlighting on the graph, so mousing over a line bolds it.
+Gregorovitch_Ollivander <- cbind.xts(GregorovitchXTS, OllivanderXTS)
+dygraph(Gregorovitch_Ollivander, ylab = "Units", xlab = "Year", main = "Units Sold") %>%
+  dyOptions(stackedGraph = TRUE, fillGraph = TRUE,
+  fillAlpha = 0.15, drawPoints = FALSE, pointSize = 1, pointShape = "dot",
+  strokeWidth = 1, strokePattern = NULL, strokeBorderWidth = NULL,
+  strokeBorderColor = "white", plotter = NULL, 
+  colors = RColorBrewer::brewer.pal(3, "Paired"),
+  drawXAxis = TRUE, drawYAxis = TRUE, axisTickSize = 3, 
+  axisLineColor = RColorBrewer::brewer.pal(3, "Paired"),
+  axisLineWidth = 0.3, axisLabelColor = "black", axisLabelFontSize = 14,
+  axisLabelWidth = 60, drawGrid = TRUE, gridLineColor = RColorBrewer::brewer.pal(3, "Paired"),
+  gridLineWidth = 0.3, titleHeight = NULL, rightGap = 5, maxNumberWidth = 6) %>% 
+  dyRangeSelector(height = 100) %>%
+  dyHighlight(highlightCircleSize = 3,
+  highlightSeriesBackgroundAlpha = 0.5, highlightSeriesOpts = list(),
+  hideOnMouseOut = TRUE) %>%
+  dyShading(from = '1995-1-1', to = '1999-1-1', color = RColorBrewer::brewer.pal(3, "Paired"), axis = "x")
+
+
+```
+
+#Preparing financial data typically has to do with the mean or the variance of the data, or sometimes the data after some transformation like the log(and then the mean or the variance of the transformed data). This is a submodel of our model. 
+# mean = ybar, variance
+##Transforming the data - Outside the context of financial data, preparing and transforming data is also a big part of the process. You have a number of possible techniques to choose from to transform your data to better "behave":
+###Normalize the data by subtracting the mean and dividing by the standard deviation
+###Alternatively, normalize or scale by dividing by the maximum value
+###Take the log of the data
+###Bucket into five evenly spaced buckets; or five evenly distributed buckets (or a number other than 5), and create a categorical variable from that. 
+###Choose a meaningful threshold and transform the data ino a new binary variable with value 1, if a data point is greater than or equal to the threshold, and 0 if less than the threshold. 
+
