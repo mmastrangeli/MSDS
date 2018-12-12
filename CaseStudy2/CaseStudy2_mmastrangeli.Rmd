@@ -1,0 +1,402 @@
+---
+title: "CaseStudy2_mmastrangeli - "
+author: "Mark Mastrangeli - DDS Analytics, Chief Data Scientist :)"
+date: "12/2/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(base)
+library(readr)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(mlr)
+library(caret)
+#colnames(read.csv("CaseStudy2-data.csv", header = TRUE))
+```
+
+#Don't be Penny Wise and Pound Foolish with your talent
+##Remember they have real human challenges too
+
+###The Plan
+*Import
+*Tidy
+*Transform
+*Visualize
+*Model (Linear Regression) 
+***How do I model a random variable like age or a scaled (1-5 or 1-30 range) variable against a binary (0:1, Yes/No)
+*Communicate
+
+##Summary: Human Capital; the talent that is the lifeblood of your orginization, especially your top talent, are your (orginizations) most valuable asset. Losing high quality, talented employees is a far bigger financial loss to the orginization than the sum of that employees total compensation package.  Said another way, it will cost FAR more to replace talented employees who meet or exceed the requirements of their role and are positive contributors to the overall good of the company, than it does to keep them. 
+
+##Your best human capital and employee compensation liability are people too. Employees real human experiences and personal life DO come into work whether we like it or not.  
+
+
+##Working to identify statistically, whether or not any of the factors and data points we have on this particular sample of employees who have come and gone is a worthy exercise if we can identify accurate predictive factors or leading indicators toward employee attrition. 
+
+##It is my assumption that 
+
+#Preliminary "hunches": 
+*Stock Options and Pay are key factors in high grade or high job level, high involvement employee retention
+**StockOptions >= 2 Is attrition rate lower than attrition rate when stock options <2
+*For Tenure > 10, Turnover of tenured, joblevel > 3, high job level employees, timesincepromotion > 5 increase in time since raise or promotion, 
+*Turnover of employees with long tenure but less than a year with a current manager could be interpersonal issues with new manager. 
+**if attrition = true did employeeID have <2 YearsWithCurrentManager?
+*Years at company vs years since promotion would seem to be a strongly correlated derived factor. 
+*Lower grade or job level employees at lower income levels will have higher rates of turnover.  
+**Is Attrition Rate higher when joblevel <= 2, and/or when incomelevel <=2
+
+(All dfTrain$ID where HourlyRate && JobLevel && 
+
+# [1] "Age"                      "Attrition"                "BusinessTravel"           "DailyRate"                "Department"              
+# [6] "DistanceFromHome"         "Education"                "EducationField"           "EmployeeNumber"           "EnvironmentSatisfaction" 
+#[11] "Gender"                   "HourlyRate"               "JobInvolvement"           "JobLevel"                 "JobRole"                 
+#[16] "JobSatisfaction"          "MaritalStatus"            "MonthlyIncome"            "MonthlyRate"              "NumCompaniesWorked"      
+#[21] "OverTime"                 "PercentSalaryHike"        "PerformanceRating"        "RelationshipSatisfaction" "StandardHours"           
+#[26] "StockOptionLevel"         "TotalWorkingYears"        "TrainingTimesLastYear"    "WorkLifeBalance"          "YearsAtCompany"          
+#[31] "YearsInCurrentRole"       "YearsSinceLastPromotion"  "YearsWithCurrManager"     "AnnualIncome"             "AnnIncomeLevel"          
+#[36] "AgeGroup"                 "JobChanges" 
+
+colnames(dfTrain)
+
+#Key Factors that lead to attrition or employee turnover
+
+##The goal of this project is to identify key factors that lead to employee attrition in order to provide the highest quality talent with the lowest probability of churn to our clients. 
+##No Company wants to invest in the onboarding and deveopment of a new employee and have that employee leave the company after a return can be made on the investment. Nor does any company want to have a work environment that creates risk of loss of talent that is the life blood of the orginization. 
+
+#The Key question we are seeking to answer is whether or not Data Science and Analytics can help us identify talent with a lower risk of attrition for our clients. 
+
+Collecting, cleaning and munging data
+Using persistence, statistics and software engineering skills
+Understanding biases in data
+Debugging output from code
+Combining visualization and data sense to explor data
+Finding patterns, building models, writing algorithms
+Devising ways to use data as a product or to improve a product
+Designing experiments
+Communicating with team members
+
+*1. Basic Analysis of the data - 
+*2. Theories and Hunches
+*3. Observations and Analysis of given variables (later, potentially observations and analaysis of derived variables)
+*4.
+
+*Import
+*Tidy
+*Transform
+*Visualize
+*Model (Linear Regression) 
+***How do I model a random variable like age or a scaled (1-5 or 1-30 range) variable against a binary (0:1, Yes/No)
+*Communicate
+
+```{r, Import}
+#Read in CSV and change columns of interest to factors
+
+dfVal <- read_csv("CaseStudy2Validation.csv")
+dfTrain <- read_csv("CaseStudy2-data.csv")
+
+```
+
+```{r}
+
+#Taking a look at the data to see what we are working with!
+#str(dfTrain)
+# We have 37 variables and 1170 observations. The Variable columns seem to have the correct variable object types. 
+
+#dfTrain <- subset(dfTrain, select = -c(Rand, EmployeeCount, Over18)) #Dropping Employee ID and Rand arbitrary variables as well as variables with only 1 level: EmployeeCount, Over18
+summary(dfTrain)
+
+
+
+#Factor
+
+#Add column of annual income data by multiplying monthly income by 12
+#Function to convert monthly income to annual income 
+MonthToYear <- function(x){
+  x = x * 12
+}
+dfTrain$AnnualIncome <- as.integer(lapply(dfTrain$MonthlyIncome, MonthToYear))
+
+#Factor character variables
+dfTrain <- dfTrain %>%
+  mutate_if(is.character, as.factor) %>%
+  select(Attrition, everything())
+
+#Factor Annual Income into 6 levels
+dfTrain$AnnualIncome <- cut(dfTrain$AnnualIncome, breaks=c(0,50000,100000,199999,Inf),labels=c("$0-$50,000", "$50,000-$100,000", "$100,000-$200,000", "Over $200,000"))
+
+#Factor Age of Employee into Age Groups, 8 levels
+dfTrain$AgeGroup <- cut(dfTrain$Age, breaks = c(18,20,22,25,30,35,40,45,50,55,60,Inf), labels = c("18-20", "20-22", "22-25", "25-30", "30-35", "35-40", "40-45", "45-50", "50-55", "55-60", "60+"))
+
+dfTrainAttritionDummies <- model.matrix(~dfTrain$Attrition -1, data = dfTrain)
+dfTrainBusinessTravelDummies <- model.matrix(~dfTrain$BusinessTravel -1, data = dfTrain)
+dfTrainEducationFieldDummies <- model.matrix(~dfTrain$Attrition -1, data = dfTrain)
+dfTrainGenderDummies <- model.matrix(~dfTrain$Gender -1, data = dfTrain)
+dfTrainDepartmentDummies <- model.matrix(~dfTrain$Department -1, data = dfTrain)
+dfTrainEducationFieldDummies <- model.matrix(~dfTrain$EducationField -1, data = dfTrain)
+dfTrainJobRoleDummies <- model.matrix(~dfTrain$JobRole -1, data = dfTrain)
+dfTrainJobSatisfactionDummies <- model.matrix(~dfTrain$JobSatisfaction -1, data = dfTrain)
+dfTrainMaritalStatusDummies <- model.matrix(~dfTrain$MaritalStatus -1, data = dfTrain)
+dfTrainOverTimeDummies <- model.matrix(~dfTrain$OverTime -1, data = dfTrain)
+dfTrainAnnualIncomeDummies <- model.matrix(~dfTrain$AnnualIncome -1, data = dfTrain)
+dfTrainAgeGroupDummies <- model.matrix(~dfTrain$AgeGroup -1, data = dfTrain)
+
+lm(formula = dfTrainAttritionDummies ~ dfTrainBusinessTravelDummies + dfTrainEducationFieldDummies + dfTrainGenderDummies + dfTrainDepartmentDummies + dfTrainEducationFieldDummies + dfTrainJobRoleDummies + dfTrainJobSatisfactionDummies + dfTrainMaritalStatusDummies + dfTrainOverTimeDummies + dfTrainAnnualIncomeDummies)
+
+#Based on this model, it appears that the BusinessTravel_Frequently and DepartmentResearch&Development have the most positive relationship to the attritionYes outcome.
+
+
+```
+
+```{r}
+dfTrainAttrition = filter(dfTrain, Attrition == "Yes")
+dfTrainAttritionRate = (count(dfTrainAttrition))/1170
+colnames(dfTrainAttritionRate) <- c("dfTrainAttritionRate")
+dfTrainAttrRate <- as.numeric(dfTrainAttrRate)
+print(dfTrainAttritionRate)
+dfTrainAttrRate
+
+#Attrition Rate Per Variable Factor Level
+
+#Attrition Rate by Job Satisfaction
+
+#dfTrain.var <- c(colnames(dfTrain$4)
+                
+#variable.names(dfTrain)
+
+#dfTrain.var = filter(dfTrain, dfTrain.var >= 0 )
+
+#Factor Level 1
+dfTrain.JobSatisfactionL1 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 1)
+#Job Satisfaction Level 1 Attrition Rate
+dfTrain.JobSatAttrRateL1 = count(dfTrain.JobSatisfactionL1)/1170
+#Factor Level 2
+dfTrain.JobSatisfactionL2 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 2)
+dfTrain.JobSatAttrRateL2 = count(dfTrain.JobSatisfactionL2)/1170
+#Factor Level 3
+dfTrain.JobSatisfactionL3 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 3)
+dfTrain.JobSatAttrRateL3 = count(dfTrain.JobSatisfactionL3)/1170
+#Factor Level 4
+dfTrain.JobSatisfactionL4 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 4)
+dfTrain.JobSatAttrRateL4 = count(dfTrain.JobSatisfactionL4)/1170
+
+#Attrition Rate of Frequent Business Travelers
+dfTrain.BusinessTravelL3 = filter(dfTrain, Attrition == "Yes" & BusinessTravel == "Travel_Frequently")
+dfTrain.BusinessTravelAttrRateL3 = count(dfTrain.BusinessTravelL3)/1170
+
+#Attrition Rate of Employees in Research and Development
+dfTrain.JobRoleRD = filter(dfTrain, Attrition == "Yes" & JobRole == "Research & Development")
+dfTrain.JobRoleRDAttrRate = count(dfTrain.JobRoleRD)/1170
+
+#Job Satisfaction Level 1 Attrition Rate
+dfTrain.JobSatAttrRateL1 = count(dfTrain.JobSatisfactionL1)/1170
+#Factor Level 2
+dfTrain.JobSatisfactionL2 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 2)
+dfTrain.JobSatAttrRateL2 = count(dfTrain.JobSatisfactionL2)/1170
+#Factor Level 3
+dfTrain.JobSatisfactionL3 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 3)
+dfTrain.JobSatAttrRateL3 = count(dfTrain.JobSatisfactionL3)/1170
+#Factor Level 4
+dfTrain.JobSatisfactionL4 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 4)
+dfTrain.JobSatAttrRateL4 = count(dfTrain.JobSatisfactionL4)/1170
+
+
+```
+
+
+
+
+```{r}
+ggplot(dfTrain,aes(x=factor(Attrition),fill=factor(JobSatisfaction)))+
+   geom_bar(position="dodge")
+
+ggplot(dfTrain,aes(x=factor(JobSatisfaction), y=factor(Attrition),fill=factor(JobSatisfaction)))+
+ geom_jitter()
+ggplot(dfTrain,aes(x=factor(JobSatisfaction), y=factor(Attrition),fill=factor(JobSatisfaction)))+
+ geom_point()
+
+ggplot(dfTrain,aes(x=factor(JobInvolvement),fill=factor(Attrition)))+
+  geom_bar(position="dodge")+
+  facet_grid(". ~ Attrition")
+ggplot(dfTrain,aes(x=factor(YearsSinceLastPromotion),fill=factor(Attrition)))+
+  geom_bar(position="dodge")+
+  facet_grid(". ~ Attrition")
+ggplot(dfTrain,aes(x=factor(YearsSinceLastPromotion),fill=factor(Attrition)))+
+  geom_bar(position="dodge")+
+  facet_grid(". ~ Attrition")
+
+ggplot(dfTrain, aes(x=Attrition,  fill=Attrition))+
+labs(title="Employees", x = "", y="Count", fill="Attrition") + geom_bar(stat = "count")
+
+ggplot(dfTrain, aes(x=Attrition,  fill=Attrition))+
+labs(title="Employees", x = "", y="Count", fill="Attrition") + geom_bar(stat = "count")
+
+ggplot(data = dfTrain) +
+  geom_bar(mapping = aes(x=AnnualIncome))
+
+ggplot(dfTrain, aes(x=AnnualIncome, fill = Attrition)) + labs(title="Attrition Frequency by Annual Income", x = "Annual Income", y="Count", fill="Attrition") + scale_fill_brewer("Dark")
+
+ggplot(dfTrain, aes(x=NumCompaniesWorked,fill = Attrition)) + 
+  labs(title="Employee Distribution by Number of Companies Worked", x = "Number of Companies", y="Employee Count", fill="Status") +
+  geom_histogram( binwidth=1, position = position_stack(reverse = TRUE),color="white") +
+  scale_fill_manual(values=c("#2F63A0","#7D9099"))
+
+plot(HourlyRate ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Annual Income")
+plot(StockOptionLevel ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Stock Option Level")
+plot(TotalWorkingYears ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Years at Company")
+plot(YearsInCurrentRole ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Years in Current Role")
+plot(YearsWithCurrManager ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Years with Current Manager")
+plot(YearsAtCompany ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Years at Company")
+```
+
+
+
+```{r, InitialExploration}
+
+
+
+
+
+
+
+
+ggplot(dfTrain, aes(x=Attrition,  fill=Attrition))+
+labs(title="CaseStudy2_data Attrition Frequency", x = "", y="Count", fill="Attrition") + geom_bar(stat = "count") + scale_fill_brewer(palette = "Dark2")
+
+#What is highest or most common variable on sample which has left the company?
+
+ggplot(dfTrain, aes(x=AnnualIncome,fill = Attrition))+
+  labs(title="Employee Distribution by Hourly Rate", x = "Annual Income", fill="AnnualIncome") +
+geom_histogram(binwidth=7, color="white",position = position_stack(vjust = 1, reverse = FALSE)) +
+  scale_fill_brewer(palette = "Dark2")
+
+ggplot(dfTrain, aes(x=HourlyRate,fill = Attrition))+
+  labs(title="Employee Distribution by Hourly Rate", x = "Hourly Rate", y="Employee Count", fill="Status") +
+geom_histogram(binwidth=7, color="white",position = position_stack(vjust = 1, reverse = FALSE)) +
+  scale_fill_brewer(palette = "Dark2")
+
+dfTrain %>% ggplot(aes(y = Attrition, fill = Attrition)) + facet_wrap(dfTrain$BusinessTravel, dfTrain$JobSatisfaction)
+  labs(title="Employee Distribution by Hourly Rate", x = "Hourly Rate", y="Employee Count", fill="Status") +
+geom_histogram(binwidth=7, color="white",position = position_stack(vjust = 1, reverse = FALSE)) +
+  scale_fill_brewer(palette = "Dark2")
+beerCOTX %>% ggplot(aes(x = IBU, y = ABV)) + facet_wrap(~State) + geom_point() + labs(title = "ABV v. IBU for Colorado")
+
+dfTrain %>% 
+  filter(Attrition == "Yes") 
+dfTrain %>% 
+  select(BusinessTravel) #How do I select variables where the value is over 2 or 3?
+
+#plot(filter(beerCOTX,State == "TX")$IBU,filter(beerCOTX,State == "TX")$ABV, pch = 20, col = "blue", xlab = "International Bitterness Units", ylab = "Alcohol By Volume", main = "ABV v. IBU of Texas Beers") lines(filter(beerCOTX,State == "TX")$IBU,predsTX)
+
+#ggplot(VAMC_State_Count, aes(reorder(VAMC_State_Count$State, VAMC_State_Count$`Number of VAMC`), VAMC_State_Count$`Number of VAMC`)) + geom_bar(aes(fill=VAMC_State_Count$State), stat="identity") + ggtitle("Distribution of VA Medical Centers in continental US") + theme(axis.text.x=element_text(angle = 90, vjust = 1,hjust = ), legend.position="none") + scale_color_manual(values = LST) + labs(title="Number of Veterans Affairs Medical Centers by State", fill = "State", x= "State", y= "VAMC Count")
+
+```
+
+
+
+
+```{r models}
+
+dfTrain %>%
+  group_by(Attrition, JobInvolvement, JobSatisfaction) %>%
+  summarize(
+    #Average Job Involvement
+    count(JobInvolvement),
+    #Average Job Satisfaction
+    count(JobSatisfaction)
+  )
+
+
+```
+
+```{r}
+
+#Is there a different percentage of Male or Female attrition? 
+#Sex of Employee: Factor with Two levels, "Female"(2), "Male"(1)
+GenderCount <- count(dfTrain, dfTrain$Gender)
+#NumberOfWomen <- as.integer(GenderCount[2,2])
+#NumberOfMen <- as.integer(GenderCount[1,2])
+
+MaleAttritionNormPercentage
+FemaleAttritionNormPercentage
+
+
+
+
+#ow does financial compensation influence attrition?
+HourlyRateRange <- range()
+AvergageHourlyRate
+MaxHourlyRate
+MedianHourlyRate
+MeanHourlyRate
+MeanHourlyRateMen
+MeanHourlyRateWomen
+MaxHourlyRateMen
+MaxHourlyRateWomen
+
+#How does workload, worklife balance, business travel, distance from home, job involvement, overtime, job level effect the attrition rate?
+
+#Non-TravelAttritionRate
+#Travel_RarelyAttritionRate
+#Travel_FrequentlyAttritionRate
+#MaxDistanceFromHome
+#AvgDistanceFromHome
+
+
+
+
+
+```
+
+```{r knn}
+nTrain.points <- 1170
+nVal.points <- 300
+
+num.test.set.labels <- nTrain.points * (nTrain.points - nVal.points)
+
+training <- sample(1:nTrain.points, nVal.points, replace = FALSE)
+
+train <- subset(dfTrain[training, ], select = c(Age, HourlyRate))
+
+testing <- setdiff(1:nTrain.points, training)
+
+test <- subset(dfTrain[testing,], select = c(Age, HourlyRate))
+
+cl <- dfTrain$Attrition[training]
+
+true.labels <- dfTrain$Attrition[testing]
+
+knn3Train(train, test, cl, k=9)
+
+for(k in 1:20) {
+  print(k)
+  predicted.labels <- knn3Train(train, test, cl, k)
+  num.incorrect.labels <- sum(predicted.labels != true.labels)
+  misclassification.rate <- num.incorrect.labels / num.test.set.labels
+  print(misclassification.rate)
+}
+
+test <- c(50,20)
+knn3Train(train,test,cl,k=5)
+  
+```
+
+
+```{r}
+#Linear Regression
+sp <- ggplot()
+
+
+```
+
+```{r}
+
+
+```
+
+
+
