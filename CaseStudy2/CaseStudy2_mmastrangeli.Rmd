@@ -16,6 +16,7 @@ library(tidyverse)
 library(knitr)
 library(mlr)
 library(caret)
+library(recipes)
 #colnames(read.csv("CaseStudy2-data.csv", header = TRUE))
 ```
 
@@ -156,23 +157,23 @@ lm(formula = dfTrainAttritionDummies ~ dfTrainBusinessTravelDummies + dfTrainEdu
 dfTrainAttrition = filter(dfTrain, Attrition == "Yes")
 dfTrainAttritionRate = (count(dfTrainAttrition))/1170
 colnames(dfTrainAttritionRate) <- c("dfTrainAttritionRate")
-dfTrainAttrRate <- as.numeric(dfTrainAttrRate)
 print(dfTrainAttritionRate)
-dfTrainAttrRate
+
 
 #Attrition Rate Per Variable Factor Level
-
 #Attrition Rate by Job Satisfaction
 
-#dfTrain.var <- c(colnames(dfTrain$4)
-                
-#variable.names(dfTrain)
 
+#How do I create a function to do this for every variable and level
+#dfTrain.var <- c(colnames(dfTrain$4)
+#variable.names(dfTrain)
 #dfTrain.var = filter(dfTrain, dfTrain.var >= 0 )
 
-#Factor Level 1
+
+
+#Filter ob Satisfaction Factor Level 1
 dfTrain.JobSatisfactionL1 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 1)
-#Job Satisfaction Level 1 Attrition Rate
+#Calculate Job Satisfaction Level 1 Attrition Rate
 dfTrain.JobSatAttrRateL1 = count(dfTrain.JobSatisfactionL1)/1170
 #Factor Level 2
 dfTrain.JobSatisfactionL2 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 2)
@@ -187,10 +188,14 @@ dfTrain.JobSatAttrRateL4 = count(dfTrain.JobSatisfactionL4)/1170
 #Attrition Rate of Frequent Business Travelers
 dfTrain.BusinessTravelL3 = filter(dfTrain, Attrition == "Yes" & BusinessTravel == "Travel_Frequently")
 dfTrain.BusinessTravelAttrRateL3 = count(dfTrain.BusinessTravelL3)/1170
-
 #Attrition Rate of Employees in Research and Development
-dfTrain.JobRoleRD = filter(dfTrain, Attrition == "Yes" & JobRole == "Research & Development")
-dfTrain.JobRoleRDAttrRate = count(dfTrain.JobRoleRD)/1170
+dfTrain.DepartmentL1 = filter(dfTrain, Attrition == "Yes" & Department == "Research & Development")
+dfTrain.DepartmentL1AttrRate = count(dfTrain.DepartmentL1)/1170
+
+contrasts(dfTrain$Department)
+
+
+
 
 #Job Satisfaction Level 1 Attrition Rate
 dfTrain.JobSatAttrRateL1 = count(dfTrain.JobSatisfactionL1)/1170
@@ -244,6 +249,8 @@ ggplot(dfTrain, aes(x=NumCompaniesWorked,fill = Attrition)) +
   labs(title="Employee Distribution by Number of Companies Worked", x = "Number of Companies", y="Employee Count", fill="Status") +
   geom_histogram( binwidth=1, position = position_stack(reverse = TRUE),color="white") +
   scale_fill_manual(values=c("#2F63A0","#7D9099"))
+
+#relabel  x axis, show actual count on bars. Show rate on bar per level
 
 plot(HourlyRate ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Annual Income")
 plot(StockOptionLevel ~ Attrition, data = dfTrain, xlab = "Attrition Rate", ylab = "Stock Option Level")
@@ -352,7 +359,41 @@ MaxHourlyRateWomen
 
 ```
 
+```{r}
+#Biomass Recipe Example: 
+head(dfTrain)
+head(dfVal)
+
+
+rec <- recipe(Attrition ~ Age + AnnualIncome + BusinessTravel + DailyRate + Department + DistanceFromHome + Education + EducationField + EmployeeNumber + EnvironmentSatisfaction + Gender + HourlyRate + JobInvolvement + JobLevel + JobSatisfaction +  RelationshipSatisfaction + MaritalStatus + MonthlyIncome + MonthlyRate + NumCompaniesWorked + OverTime + PercentSalaryHike + PerformanceRating + RelationshipSatisfaction + StandardHours + StockOptionLevel + TotalWorkingYears + TrainingTimesLastYear + WorkLifeBalance + YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion + YearsWithCurrManager,
+              data = dfTrain)
+
+# Age, Attrition, BusinessTravel, DailyRate, Department, DistanceFromHome, Education, EducationField, EmployeeNumber, EnvironmentSatisfaction, Gender, HourlyRate,      "JobInvolvement"           "JobLevel"                 "JobRole"   
+#[16] "JobSatisfaction"          "MaritalStatus"            "MonthlyIncome"            "MonthlyRate"              "NumCompaniesWorked"      
+#[21] "OverTime"                 "PercentSalaryHike"        "PerformanceRating"        "RelationshipSatisfaction" "StandardHours"           
+#[26] "StockOptionLevel"         "TotalWorkingYears"        "TrainingTimesLastYear"    "WorkLifeBalance"          "YearsAtCompany"          
+#[31] "YearsInCurrentRole"       "YearsSinceLastPromotion"  "YearsWithCurrManager AnnualIncome AnnIncomeLevel AgeGroup JobChanges
+
+center_trans <- rec %>%
+  step_center(carbon, contains("gen"), -hydrogen)
+
+center_obj <- prep(center_trans, training = biomass_tr)
+
+transformed_te <- bake(center_obj, biomass_te)
+
+biomass_te[1:10, names(transformed_te)]
+transformed_te
+
+tidy(center_trans, number = 1)
+tidy(center_obj, number = 1)
+
+```
+
+
 ```{r knn}
+
+
+
 nTrain.points <- 1170
 nVal.points <- 300
 
@@ -369,6 +410,7 @@ test <- subset(dfTrain[testing,], select = c(Age, HourlyRate))
 cl <- dfTrain$Attrition[training]
 
 true.labels <- dfTrain$Attrition[testing]
+
 
 knn3Train(train, test, cl, k=9)
 
@@ -394,9 +436,155 @@ sp <- ggplot()
 ```
 
 ```{r}
+#write.csv(Case2PredictionsSadler.csv)
+dfTrainPredictions
+dfTestPredictions <- 
+```
+
+
+
+<!--
+```{r KMeansAndKNN}
+summarizeColumns(dfTrain)
+ldfTrain = length(dfTrain$ID)
+ldfVal = length(dfVal$ID)
+
+ldfTrain = length(dfTrain$ID)
+ldfVal = length(dfVal$ID)
+
+perc_test = ldfVal / (ldfVal + ldfTrain)
+perc_train = ldfTrain / (ldfVal + ldfTrain)
+perc_test
+perc_train
+
+head(dfTrain)
+head(dfVal)
+
+summarizeColumns(dfTrain)
+summarizeColumns(dfVal)
+
+nTrain.points <- 1170
+nVal.points <- 300
+
+perc_test <- ldfTrain * (ldfTrain - ldfVal)
+
+training <- sample(1:ldfTrain, ldfVal, replace = FALSE)
+
+train <- subset(dfTrain[training, ], select = c(Department, BusinessTravel))
+
+testing <- setdiff(1:ldfTrain, training)
+
+test <- subset(dfTrain[testing,], select = c(Department, BusinessTravel))
+
+cl <- dfTrain$Attrition[training]
+
+true.labels <- dfVal$Attrition[testing]
+
+
+knnregTrain(train, test, cl, k=9)
+
+
+#knn using the class package
+#Note... you cannot put the repsonse in teh dfTrain and dfVal arguments.  
+results <- knnregTrain(train, test, cl, k = 3)
+dfVal$AttritionPred = results
+confusionMatrix(table(dfVal$Attrition,dfVal$AttritionPred))
+
+
+### KNN Regression
+
+plot(dfTrain$Department,dfTrain$BusinessTravel, main = "Simple KNN Example")
+text(dfTrain$x1, dfTrain$x2, labels = dfTrain$y, pos = 4, col = "blue")
+dfVal = data.frame(x1 = dfVal$JobRole, x2 = dfVal$Department, y = as.numeric(dfVal$Attrition))
+
+
+
+
+# K Means Clustering 
+
+clusters = kmeans(dfTrain, centers = 3, nstart = 10)
+dfTrain$clusters = clusters$cluster
+dfTrain %>% ggplot(aes(x = x1, y = x2, label = clusters)) + geom_text()
+
+# Classification using Kmeans clustering and KNN
+
+dfVal = data.frame(x1 = c(6,7,8,8), x2 = c(9,10,10,11), y = c(8,9,9,7), clusters = c(3,1,1,2))
+results = class::knn(dfTrain[,c(1:3)],dfVal[,c(1:3)],dfTrain[,4], k = 3)
+dfVal$clustersPred = results
+table(dfVal$clusters,dfVal$clustersPred) # function confusionMatrix only for binary classfication.
+
+summarizeColumns(dfTrain)
+ldfTrain = length(dfTrain$ID)
+ldfVal = length(dfVal$ID)
+
+ldfTrain = length(dfTrain$ID)
+ldfVal = length(dfVal$ID)
+
+perc_test = ldfVal / (ldfVal + ldfTrain)
+perc_train = ldfTrain / (ldfVal + ldfTrain)
+perc_test
+perc_train
+
+head(dfTrain)
+head(dfVal)
+
+summarizeColumns(dfTrain)
+summarizeColumns(dfVal)
+
+nTrain.points <- 1170
+nVal.points <- 300
+
+perc_test <- ldfTrain * (ldfTrain - ldfVal)
+
+training <- sample(1:ldfTrain, ldfVal, replace = FALSE)
+
+train <- subset(dfTrain[training, ], select = c(Department, BusinessTravel))
+
+testing <- setdiff(1:ldfTrain, training)
+
+test <- subset(dfTrain[testing,], select = c(Department, BusinessTravel))
+
+cl <- dfTrain$Attrition[training]
+
+true.labels <- dfVal$Attrition[testing]
+
+
+knnregTrain(train, test, cl, k=9)
+
+
+#knn using the class package
+#Note... you cannot put the repsonse in teh dfTrain and dfVal arguments.  
+results <- knnregTrain(train, test, cl, k = 3)
+dfVal$AttritionPred = results
+confusionMatrix(table(dfVal$Attrition,dfVal$AttritionPred))
+
+
+### KNN Regression
+
+plot(dfTrain$Department,dfTrain$BusinessTravel, main = "Simple KNN Example")
+text(dfTrain$x1, dfTrain$x2, labels = dfTrain$y, pos = 4, col = "blue")
+dfVal = data.frame(x1 = dfVal$JobRole, x2 = dfVal$Department, y = as.numeric(dfVal$Attrition))
+
+
+
+
+# K Means Clustering 
+
+clusters = kmeans(dfTrain, centers = 3, nstart = 10)
+dfTrain$clusters = clusters$cluster
+dfTrain %>% ggplot(aes(x = x1, y = x2, label = clusters)) + geom_text()
+
+# Classification using Kmeans clustering and KNN
+
+dfVal = data.frame(x1 = c(6,7,8,8), x2 = c(9,10,10,11), y = c(8,9,9,7), clusters = c(3,1,1,2))
+results = class::knn(dfTrain[,c(1:3)],dfVal[,c(1:3)],dfTrain[,4], k = 3)
+dfVal$clustersPred = results
+table(dfVal$clusters,dfVal$clustersPred) # function confusionMatrix only for binary classfication.
 
 
 ```
+-->
+
 
 
 

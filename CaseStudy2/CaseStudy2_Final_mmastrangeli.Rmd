@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(base)
+library(class)
 library(readr)
 library(tidyr)
 library(dplyr)
@@ -18,153 +19,389 @@ library(mlr)
 library(caret)
 #colnames(read.csv("CaseStudy2-data.csv", header = TRUE))
 ```
+#Run KNN multiple times on individual variables to get  accuracy estimate. 
+#Bivin Sadler: 2. Choose the top three variables with the highest accruacy.
+#Bivin Sadler: 3. Now allow more than one variable in the knn model to get a more optimal accuracy on the dfVal  set. 
+#Bivin Sadler: 4. Make some plots of the variables you chose versus attrition RATE.
+#Bivin Sadler: Now for leraning about Job Role relationships ...
+#Bivin Sadler: Plot Job role (x axis) versus satisfaction variables.  Enviromnment, etc. 
+#Bivin Sadler: Then make a video and clean up the RMD file.  
 
-## R Markdown
 
 ```{r Import}
 #Collecting and setting up persistent variables
-dfTrainImport <- read_csv("CaseStudy2-data.csv")
-dfValImport <- read_csv("CaseStudy2Validation.csv")
-dfTrainColumns <- colnames(dfTrainImport)
-dfTrainColumns
-dfValColumns <- colnames(dfValImport)
-dfTrainImportSum <- summary(dfTrainImport)
-dfValImportSum <- summary(dfValImport)
-str(dfTrainImport)
-str(dfValImport)
+dfTrain <- read_csv("CaseStudy2-data.csv")
+dfVal <- read_csv("CaseStudy2Validation.csv")
 
 
-dfValKey <- cbind2(dfValImport$ID, dfValImport$Attrition)
 
+dfTrainImportSum <- summary(dfTrain)
+dfValImportSum <- summary(dfVal)
+str(dfTrain)
+str(dfVal)
+head(dfTrain)
+
+#Drop unused variables
+dfTrain <- subset(dfTrain, select = -c(EmployeeCount, EmployeeNumber, Over18, Rand, StandardHours))
+dfValTrue <- subset(dfVal, select = Attrition)
+dfVal <- subset(dfVal, select = -c(EmployeeCount, EmployeeNumber, Over18, Rand, StandardHours))
+dfValTrue <- subset(dfVal, select = Attrition)
+
+
+
+```
+```{r BasicFactoring}
+
+#cleaning and munging data, persistence, statistics
 #Function to convert monthly income to annual income 
 MonthToYear <- function(x){
   x = x * 12
 }
+dfTrain$AnnualIncome <- as.integer(lapply(dfTrain$MonthlyIncome, MonthToYear))
+dfVal$AnnualIncome <- as.integer(lapply(dfVal$MonthlyIncome, MonthToYear))
 
-dfTrain.1 <- dfTrainImport
-head(dfTrain.1)
+#Factor character variables
+dfTrain <- dfTrain %>%
+  mutate_if(is.character, as.factor) %>%
+  select(Attrition, everything())
+dfVal <- dfVal %>%
+  mutate_if(is.character, as.factor) %>%
+  select(Attrition, everything())
+
+#Factor Annual Income into 4 levels
+dfTrain$AnnualIncomeGroup <- cut(dfTrain$AnnualIncome, breaks = 5)
 
 ```
-```{r Transform}
-#filter() examples
-#filter(starwars, species == "Human")
-#filter(starwars, mass > 1000)
 
-# Multiple criteria
-#filter(starwars, hair_color == "none" & eye_color == "black")
-#filter(starwars, hair_color == "none" | eye_color == "black")
+```{r numericfactoring}
 
-# Multiple arguments are equivalent to and
-#filter(starwars, hair_color == "none", eye_color == "black")
+#Factor Age of Employee into Age Groups, 5 levels
+dfTrain$HourlyRate <- cut(dfTrain$HourlyRate, breaks = 5)
+dfTrain$DailyRate <- cut(dfTrain$DailyRate, breaks = 5)
+dfTrain$MonthlyIncome <- cut(dfTrain$MonthlyIncome, breaks = 5)
+dfTrain$MonthlyRate <- cut(dfTrain$MonthlyRate, breaks = 5)
+dfTrain$Age <- cut(dfTrain$Age, breaks = 5)
 
-#filter_all() examples
-# While filter() accepts expressions with specific variables, the
-# scoped filter verbs take an expression with the pronoun `.` and
-# replicate it over all variables. This expression should be quoted
-# with all_vars() or any_vars():
-#all_vars(is.na(.))
-#any_vars(is.na(.))
+```
+
+```{r factoreverything}
 
 
-# You can take the intersection of the replicated expressions:
-#filter_all(mtcars, all_vars(. > 150))
-# Or the union:
-#filter_all(mtcars, any_vars(. > 150))
+dfTrain$Education <- factor(dfTrain$Education)
+dfVal$Education <- factor(dfVal$Education)
 
-# You can vary the selection of columns on which to apply the
-# predicate. filter_at() takes a vars() specification:
-#filter_at(mtcars, vars(starts_with("d")), any_vars((. %% 2) == 0))
+dfTrain$StockOptionLevel <- factor(dfTrain$StockOptionLevel)
+dfVal$StockOptionLevel <- factor(dfVal$StockOptionLevel)
 
-# And filter_if() selects variables with a predicate function:
-#filter_if(mtcars, ~ all(floor(.) == .), all_vars(. != 0))
+dfTrain$PerformanceRating <- factor(dfTrain$PerformanceRating)
+dfVal$PerformanceRating <- factor(dfVal$PerformanceRating)
+
+dfTrain$JobSatisfaction <- factor(dfTrain$JobSatisfaction)
+dfVal$JobSatisfaction <- factor(dfVal$JobSatisfaction)
+
+dfTrain$JobLevel <- factor(dfTrain$JobLevel)
+dfVal$JobLevel <- factor(dfVal$JobLevel)
+
+dfTrain$DistanceFromHome <- cut(dfTrain$DistanceFromHome, breaks = 5)
+dfVal$DistanceFromHome <- cut(dfVal$DistanceFromHome, breaks = 5)
+
+dfTrain$JobInvolvement <- factor(dfTrain$JobInvolvement)
+dfVal$JobInvolvement <- factor(dfVal$JobInvolvement)
+
+dfTrain$NumCompaniesWorked <- cut(dfTrain$NumCompaniesWorked, breaks = 5)
+dfVal$NumCompaniesWorked <- cut(dfVal$NumCompaniesWorked, breaks = 5)
+
+dfTrain$EnvironmentSatisfaction <- factor(dfTrain$EnvironmentSatisfaction)
+dfVal$EnvironmentSatisfaction <- factor(dfVal$EnvironmentSatisfaction)
+
+dfTrain$RelationshipSatisfaction <- factor(dfTrain$RelationshipSatisfaction)
+dfVal$RelationshipSatisfaction <- factor(dfVal$RelationshipSatisfaction)
+
+dfTrain$EnvironmentSatisfaction <- factor(dfTrain$EnvironmentSatisfaction)
+dfVal$EnvironmentSatisfaction <- factor(dfVal$EnvironmentSatisfaction)
+
+dfTrain$WorkLifeBalance <- factor(dfTrain$WorkLifeBalance)
+dfVal$WorkLifeBalance <- factor(dfVal$WorkLifeBalance)
+
+dfTrain$TotalWorkingYears <- cut(dfTrain$TotalWorkingYears, breaks = 5)
+dfVal$TotalWorkingYears <- cut(dfVal$TotalWorkingYears, breaks = 5)
+
+dfTrain$YearsAtCompany <- cut(dfTrain$YearsAtCompany, breaks = 5)
+dfVal$YearsAtCompany <- cut(dfVal$YearsAtCompany, breaks = 5)
+
+dfTrain$YearsInCurrentRole <- cut(dfTrain$YearsInCurrentRole, breaks = 5)
+dfVal$YearsInCurrentRole <- cut(dfVal$YearsInCurrentRole, breaks = 5)
+
+dfTrain$YearsSinceLastPromotion <- cut(dfTrain$YearsSinceLastPromotion, breaks = 5)
+dfVal$YearsSinceLastPromotion <- cut(dfVal$YearsSinceLastPromotion, breaks = 5)
+
+dfTrain$PercentSalaryHike <- cut(dfTrain$PercentSalaryHike, breaks = 5)
+dfVal$PercentSalaryHike <- cut(dfVal$PercentSalaryHike, breaks = 5)
+
+dfTrain$YearsWithCurrManager <- cut(dfTrain$YearsWithCurrManager, breaks = 5)
+dfVal$YearsWithCurrManager <- cut(dfVal$YearsWithCurrManager, breaks = 5)
+
+dfTrain$TrainingTimesLastYear <- cut(dfTrain$TrainingTimesLastYear, breaks = 5)
+dfVal$TrainingTimesLastYear <- cut(dfVal$TrainingTimesLastYear, breaks = 5)
+
+```
 
 
-#cleaning and munging data, persistence, statistics
-dfTrain <- as.data.frame(dfTrainImport)
-#dfTrain Attrition Rate for Sample size tally(dfTrain$Attrition == "Yes")/tally(rows(dfTrain))
-factor(dfTrain$Attrition)
 
+```{r ExploratoryDataAnalysis}
+attach(dfTrain)
 #Attrition Rate in dfTrain Sample Set
-dfTrainAttrition = filter(dfTrain, Attrition == "Yes")
-dfTrainAttrRate = (count(dfTrainAttrition))/1170
-colnames(dfTrainAttrRate) <- c("dfTrainAttritionRate")
-dfTrainAttrRate <- as.numeric(dfTrainAttrRate)
-print(dfTrainAttritionRate)
-dfTrainAttrRate
 
-#Attrition Rate Per Variable Factor Level
-
-#Attrition Rate by Job Satisfaction
-
-#dfTrain.var <- c(colnames(dfTrain$4)
-                
-#variable.names(dfTrain)
-
-#dfTrain.var = filter(dfTrain, dfTrain.var >= 0 )
-
-#Factor Level 1
-dfTrain.JobSatisfactionL1 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 1)
-#Job Satisfaction Level 1 Attrition Rate
-dfTrain.JobSatAttrRateL1 = count(dfTrain.JobSatisfactionL1)/1170
-#Factor Level 2
-dfTrain.JobSatisfactionL2 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 2)
-dfTrain.JobSatAttrRateL2 = count(dfTrain.JobSatisfactionL2)/1170
-#Factor Level 3
-dfTrain.JobSatisfactionL3 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 3)
-dfTrain.JobSatAttrRateL3 = count(dfTrain.JobSatisfactionL3)/1170
-#Factor Level 4
-dfTrain.JobSatisfactionL4 = filter(dfTrain, Attrition == "Yes" & JobSatisfaction == 4)
-dfTrain.JobSatAttrRateL4 = count(dfTrain.JobSatisfactionL4)/1170
-
-#Validation against total number of Yes Attrition in dfTrain
-sum(count(dfTrain.JobSatisfactionAttr1), count(dfTrain.JobSatisfactionAttr2), count(dfTrain.JobSatisfactionAttr3), count(dfTrain.JobSatisfactionAttr4))
-
-max(dfTrain.JobSatAttrRateL1, dfTrain.JobSatAttrRateL2, dfTrain.JobSatAttrRateL3, dfTrain.JobSatAttrRateL4)
+dfTrainColumns <- colnames(dfTrain)
+print(dfTrainColumns, quote = FALSE)
+dfValColumns <- colnames(dfVal)
 
 
-VariableAttrRateL1 <- dfTrain.JobSatAttrRateL1
-VariableAttrRateL2 <- dfTrain.JobSatAttrRateL2
-VariableAttrRateL3 <- dfTrain.JobSatAttrRateL3
-VariableAttrRateL4 <- dfTrain.JobSatAttrRateL4
+#Finding Attrition Rates for Training Set and Character Variables
+###dfTrain Sample Attrition Rate
+dfTrain %>% group_by(Attrition) %>%
+  count(Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
 
-VariableSatRates <- data.frame(c(VariableAttrRateL1, VariableAttrRateL2, VariableAttrRateL3, VariableAttrRateL4))
-colnames(VariableSatRates) <- c("Level 1 Attr Rate", "Level 2 Attr Rate", "Level 3 Attr Rate", "Level 4 Attr Rate")
-VariableSatRates
+###Attrition Rate by Age
+dfTrain %>% group_by(Age) %>%
+  count(Age, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
 
+###Attrition Rate by AnnualIncome
+dfTrain %>% group_by(AnnualIncome) %>%
+  count(AnnualIncome, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
 
-dfTrainAttritionRate = (count(dfTrainAttrition))/1170
-colnames(dfTrainAttritionRate) <- c("dfTrainAttritionRate")
-dfTrainJobSatisfactionAttr <- 
-  
-print(dfTrainAttritionRate)
+###Attrtion Rate for BusinessTravel
+dfTrain %>% group_by(BusinessTravel) %>%
+  count(BusinessTravel, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
 
-AttrFunc <- function(x,y){
-  
-  
-}
-
-#for Example
-#for(i in 1:5) print(1:i)
-#for(n in c(2,5,10,20,50)) {
- #  x <- stats::rnorm(n)
-  # cat(n, ": ", sum(x^2), "\n", sep = "")
-#}
-#f <- factor(sample(letters[1:5], 10, replace = TRUE))
-#for(i in unique(f)) print(i)
-
-for(n in count(dfTrainColumns)){
-  print(dfTrainColumns[n,])
-}
-
-```
-```{r Visualize}
-#Combining visualization and data sense to explor data
-#Understanding biases in data
-dfTrainColumns
-#What is the attrition rate for the categorical or factor variables: Age, BusinessTravel, DailyRate, Department, DistancefromHome, Education, EducationField, EnvironmentalSatisfaction, Gender, HourlyRate, JobInvolvement, JobLevel, JobRole, JobSatisfaction, MaritalStatus, MonthlyIncome, NumCompaniesWorked, PercentSalaryHike, PerformanceRating, RelationshipSatisfaction, StockOptionLevel, TotalWorkingYears, TrainingTimesLastYear, WorkLifeBalance, YearsAtCompany, YearsInCurrentRole, YearsSinceLastPromotion, YearsWithCurrManager
+###Attrition Rate by Department
+dfTrain %>% group_by(Department) %>%
+  count(Department, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
 
 
-```
-```{r Model}
-#Finding patterns, building models, writing algorithms
+###Attrition Rate by DistanceFromHome
+dfTrain %>% group_by(DistanceFromHome) %>%
+  count(DistanceFromHome, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by Education
+dfTrain %>% group_by(Education) %>%
+  count(Education, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by EducationField
+dfTrain %>% group_by(EducationField) %>%
+  count(EducationField, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by EnvironmentSatisfaction
+dfTrain %>% group_by(EnvironmentSatisfaction) %>%
+  count(EnvironmentSatisfaction, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by Gender
+dfTrain %>% group_by(Gender) %>%
+  count(Gender, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by JobInvolvement
+dfTrain %>% group_by(JobInvolvement) %>%
+  count(JobInvolvement, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by JobLevel
+dfTrain %>% group_by(JobLevel) %>%
+  count(JobLevel, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by JobRole
+dfTrain %>% group_by(JobRole) %>%
+  count(JobRole, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by JobSatisfaction
+dfTrain %>% group_by(JobSatisfaction) %>%
+  count(JobSatisfaction, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by MaritalStatus
+dfTrain %>% group_by(MaritalStatus) %>%
+  count(MaritalStatus, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by NumCompaniesWorked
+dfTrain %>% group_by(NumCompaniesWorked) %>%
+  count(NumCompaniesWorked, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by OverTime
+dfTrain %>% group_by(OverTime) %>%
+  count(OverTime, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by PercentSalaryHike
+dfTrain %>% group_by(PercentSalaryHike) %>%
+  count(PercentSalaryHike, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by PerformanceRating
+dfTrain %>% group_by(PerformanceRating) %>%
+  count(PerformanceRating, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by RelationshipSatisfaction
+dfTrain %>% group_by(RelationshipSatisfaction) %>%
+  count(RelationshipSatisfaction, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by StockOptionLevel
+dfTrain %>% group_by(StockOptionLevel) %>%
+  count(StockOptionLevel, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by TotalWorkingYears
+dfTrain %>% group_by(TotalWorkingYears) %>%
+  count(TotalWorkingYears, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by TrainingTimesLastYear
+dfTrain %>% group_by(TrainingTimesLastYear) %>%
+  count(TrainingTimesLastYear, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by WorkLifeBalance
+dfTrain %>% group_by(WorkLifeBalance) %>%
+  count(WorkLifeBalance, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by YearsAtCompany
+dfTrain %>% group_by(YearsAtCompany) %>%
+  count(YearsAtCompany, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by YearsInCurrentRole
+dfTrain %>% group_by(YearsInCurrentRole) %>%
+  count(YearsInCurrentRole, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by YearsSinceLastPromotion
+dfTrain %>% group_by(YearsSinceLastPromotion) %>%
+  count(YearsSinceLastPromotion, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+###Attrition Rate by YearsWithCurrManager
+dfTrain %>% group_by(YearsWithCurrManager) %>%
+  count(YearsWithCurrManager, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+
+
+
+###Attrition Rates by Business Travel by Department
+dfTrain %>% group_by(Department, BusinessTravel) %>%
+  count(BusinessTravel, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+
+
+#The Data shows that Research and Development that Travel Frequently and Sales People that Travel Frequently have the highest attrition rates
+
+dfTrain %>% group_by(Department, BusinessTravel, JobRole, JobInvolvement, JobLevel, StockOptionLevel) %>%
+  count(BusinessTravel, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+dfTrain %>% group_by(MaritalStatus, RelationshipSatisfaction, Gender) %>%
+  count(Gender, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+dfTrain %>% group_by(YearsWithCurrManager, JobSatisfaction) %>%
+  count(YearsWithCurrManager, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+#Employees with low job satisfaction and a new manager are at higher risk of leaving
+#If we know an employee is leaving, we should look to see if they had a new manager
+
+dfTrain %>% group_by(YearsInCurrentRole, YearsSinceLastPromotion, JobSatisfaction) %>%
+  count(YearsInCurrentRole, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+#It appears that an employee at 5-7 years in the same role with with as many years since last promotion is at higher risk of leaving the company. 
+
+dfTrain %>% group_by(JobSatisfaction, JobRole) %>%
+  count(JobSatisfaction, Attrition) %>%
+  spread(Attrition, n) %>%
+  mutate(LevelAttritionRate = 100*(Yes/(Yes + No))) %>%
+  mutate(SampleAttritionRate = (Yes/1170)*100)
+
+
 ```
